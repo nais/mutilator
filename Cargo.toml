@@ -1,0 +1,12 @@
+[package]
+name = "mutilator"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.71"
+axum = "0.6.18"
+figment = { version = "0.10.8", features = ["env", "yaml"] }
+tokio = { version = "1.28.0", features = ["full"] }
