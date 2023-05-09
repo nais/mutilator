@@ -1,14 +1,13 @@
+use std::path::PathBuf;
 use anyhow::Result;
-use axum::{
-    Router,
-    routing::get,
-};
 use figment::{Figment, providers::Env};
 use figment::providers::Serialized;
 use serde::{Deserialize, Serialize};
 use atty::Stream;
+use log::info;
 
 mod logging;
+mod web;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub enum LogFormat {
@@ -17,13 +16,23 @@ pub enum LogFormat {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct Config {
+pub struct WebConfig {
     // The address:port to bind to
     bind_address: String,
+    // Path to certificate for TLS
+    certificate_path: Option<PathBuf>,
+    // Path to private key for TLS
+    private_key_path: Option<PathBuf>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct Config {
     // Logging format to use
     log_format: LogFormat,
     // Log level
-    log_level: log::LevelFilter
+    log_level: log::LevelFilter,
+
+    web: WebConfig,
 }
 
 impl Default for Config {
@@ -33,16 +42,20 @@ impl Default for Config {
             false => LogFormat::Json,
         };
         Config {
-            bind_address: "0.0.0.0:3000".into(),
             log_level: log::LevelFilter::Info,
             log_format,
+            web: WebConfig {
+                bind_address: "0.0.0.0:3000".into(),
+                certificate_path: None,
+                private_key_path: None,
+            }
         }
     }
 }
 
 fn main() -> Result<()> {
     let config: Config = Figment::from(Serialized::defaults(Config::default()))
-        .merge(Env::prefixed("MUTILATOR_"))
+        .merge(Env::prefixed("MUTILATOR__").split("__"))
         .extract()?;
     app(config)?;
     Ok(())
@@ -51,15 +64,9 @@ fn main() -> Result<()> {
 #[tokio::main]
 async fn app(config: Config) -> Result<()> {
     logging::init_logging(&config)?;
+    info!("Configuration loaded: {:?}", config);
 
-    // build our application with a single route
-    let app = Router::new().route("/", get(|| async { "Hello, World!" }));
-
-    // run it with hyper on localhost:3000
-    axum::Server::bind(&config.bind_address.parse().unwrap())
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+    web::start_web_server(config.web).await?;
 
     Ok(())
 }
