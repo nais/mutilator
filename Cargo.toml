@@ -8,5 +8,6 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.71"
 axum = "0.6.18"
-figment = { version = "0.10.8", features = ["env", "yaml"] }
+figment = { version = "0.10.8", features = ["env"] }
+serde = { version = "1.0.162", features = ["serde_derive"] }
 tokio = { version = "1.28.0", features = ["full"] }
