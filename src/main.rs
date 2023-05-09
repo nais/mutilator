@@ -6,6 +6,7 @@ use axum::{
 use figment::{Figment, providers::Env};
 use figment::providers::Serialized;
 use serde::{Deserialize, Serialize};
+use atty::Stream;
 
 mod logging;
 
@@ -27,10 +28,14 @@ pub struct Config {
 
 impl Default for Config {
     fn default() -> Config {
+        let log_format = match atty::is(Stream::Stdout) {
+            true => LogFormat::Plain,
+            false => LogFormat::Json,
+        };
         Config {
             bind_address: "0.0.0.0:3000".into(),
-            log_format: LogFormat::Plain,
             log_level: log::LevelFilter::Info,
+            log_format,
         }
     }
 }

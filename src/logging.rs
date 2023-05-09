@@ -32,11 +32,14 @@ pub fn init_logging(config: &Config) -> Result<()> {
         LogFormat::Plain => {
             env_logger::builder()
                 .filter_level(config.log_level)
+                .target(env_logger::Target::Stdout)
+                .default_format()
                 .init();
         }
         LogFormat::Json => {
             env_logger::builder()
                 .filter_level(config.log_level)
+                .target(env_logger::Target::Stdout)
                 .format(|buf, record| {
                     let mut data = json::object! {
                         timestamp: buf.timestamp_seconds().to_string(),
