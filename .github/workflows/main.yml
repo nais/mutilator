@@ -1,0 +1,113 @@
+name: Build and deploy Mutilator
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    paths-ignore:
+      - charts/**
+
+env:
+  REGISTRY: europe-north1-docker.pkg.dev/nais-io/nais/images
+  EARTHLY_USE_INLINE_CACHE: true
+  EARTHLY_SAVE_INLINE_CACHE: true
+  EARTHLY_VERBOSE: true
+  EARTHLY_FULL_TARGET: true
+  EARTHLY_OUTPUT: true
+
+jobs:
+  setup:
+    name: Set variables
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # ratchet:actions/checkout@v3
+      - name: "Set image version"
+        id: constants
+        run: |
+          export version="$(date +%Y%m%d%H%M%S)-$(git describe --always --dirty --exclude '*')"
+          echo "VERSION=${version}" >> ${GITHUB_OUTPUT}
+    outputs:
+      VERSION: "${{ steps.constants.outputs.VERSION }}"
+
+  build:
+    name: Build and push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    needs: setup
+    env:
+      VERSION: "${{ needs.setup.outputs.VERSION }}"
+    steps:
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # ratchet:actions/checkout@v3
+      - name: Install cosign
+        uses: sigstore/cosign-installer@204a51a57a74d190b284a0ce69b44bc37201f343 # ratchet:sigstore/cosign-installer@main
+        with:
+          cosign-release: 'v2.0.0'
+      - name: Verify builder image
+        run: cosign verify --certificate-identity "https://github.com/chainguard-images/images/.github/workflows/release.yaml@refs/heads/main"  --certificate-oidc-issuer "https://token.actions.githubusercontent.com" cgr.dev/chainguard/go:1.20
+      - name: Verify runner image
+        run: cosign verify --certificate-identity "https://github.com/chainguard-images/images/.github/workflows/release.yaml@refs/heads/main"  --certificate-oidc-issuer "https://token.actions.githubusercontent.com" cgr.dev/chainguard/static
+      - id: "auth"
+        if: github.ref == 'refs/heads/main'
+        name: "Authenticate to Google Cloud"
+        uses: "google-github-actions/auth@v1.1.1" # ratchet:google-github-actions/auth@v1.0.0
+        with:
+          workload_identity_provider: ${{ secrets.NAIS_IO_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: "gh-mutilator@nais-io.iam.gserviceaccount.com"
+          token_format: "access_token"
+      - name: Login to Google Artifact Registry
+        if: github.ref == 'refs/heads/main'
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a # ratchet:docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: "oauth2accesstoken"
+          password: "${{ steps.auth.outputs.access_token }}"
+      - name: Install earthly
+        uses: earthly/actions-setup@135d686cdc4619918fd1b542d0a08d61dd104518 # ratchet:earthly/actions-setup@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and possibly push mutilator
+        env:
+          EARTHLY_PUSH: "${{ github.ref == 'refs/heads/main' }}"
+        run: |
+          earthly +docker --VERSION=${VERSION} --REGISTRY=${REGISTRY}
+      - name: Retrieve image digest
+        id: imgdigest
+        if: github.ref == 'refs/heads/main'
+        run: |
+          docker pull ${{ env.REGISTRY }}/mutilator:${VERSION}
+          echo "digest=$(docker inspect ${{ env.REGISTRY }}/mutilator:${VERSION} | jq -r '.[].RepoDigests[0]')" >> $GITHUB_OUTPUT
+      - name: Sign the container image
+        if: github.ref == 'refs/heads/main'
+        run: cosign sign --yes ${{ steps.imgdigest.outputs.digest }}
+      - name: Create SBOM
+        if: github.ref == 'refs/heads/main'
+        uses: aquasecurity/trivy-action@e5f43133f6e8736992c9f3c1b3296e24b37e17f2 # ratchet:aquasecurity/trivy-action@master
+        with:
+          scan-type: 'image'
+          format: 'cyclonedx'
+          output: 'cyclone.sbom.json'
+          image-ref: ${{ steps.imgdigest.outputs.digest }}
+      - name: Attest image
+        if: github.ref == 'refs/heads/main'
+        run: cosign attest --yes --predicate cyclone.sbom.json --type cyclonedx ${{ steps.imgdigest.outputs.digest }}
+
+# TODO: Set up fasit deploy
+#  deploy-fasit:
+#    name: Deploy to Fasit
+#    if: github.ref == 'refs/heads/main'
+#    runs-on: fasit-deploy
+#    permissions:
+#      contents: read
+#      id-token: write
+#    needs:
+#      - setup
+#      - build
+#    steps:
+#      - uses: nais/fasit-deploy@b2c0b6d049b53bef41b321eec406fe66938576fd # ratchet:nais/fasit-deploy@main
+#        with:
+#          json: '{"image": {"tag": "${{ needs.setup.outputs.VERSION }}"}}'
+#          feature_name: mutilator
