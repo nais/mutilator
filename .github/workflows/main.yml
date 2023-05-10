@@ -37,6 +37,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      packages: write
     needs: setup
     env:
       VERSION: "${{ needs.setup.outputs.VERSION }}"
