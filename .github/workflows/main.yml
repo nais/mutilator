@@ -102,19 +102,18 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: cosign attest --yes --predicate cyclone.sbom.json --type cyclonedx ${{ steps.imgdigest.outputs.digest }}
 
-# TODO: Set up fasit deploy
-#  deploy-fasit:
-#    name: Deploy to Fasit
-#    if: github.ref == 'refs/heads/main'
-#    runs-on: fasit-deploy
-#    permissions:
-#      contents: read
-#      id-token: write
-#    needs:
-#      - setup
-#      - build
-#    steps:
-#      - uses: nais/fasit-deploy@b2c0b6d049b53bef41b321eec406fe66938576fd # ratchet:nais/fasit-deploy@main
-#        with:
-#          json: '{"image": {"tag": "${{ needs.setup.outputs.VERSION }}"}}'
-#          feature_name: mutilator
+  deploy-fasit:
+    name: Deploy to Fasit
+    if: github.ref == 'refs/heads/main'
+    runs-on: fasit-deploy
+    permissions:
+      contents: read
+      id-token: write
+    needs:
+      - setup
+      - build
+    steps:
+      - uses: nais/fasit-deploy@b2c0b6d049b53bef41b321eec406fe66938576fd # ratchet:nais/fasit-deploy@main
+        with:
+          json: '{"image": {"tag": "${{ needs.setup.outputs.VERSION }}"}}'
+          feature_name: mutilator
