@@ -15,4 +15,4 @@ figment = { version = "0.10.8", features = ["env"] }
 json = "0.12.4"
 log = { version = "0.4.17", features = ["kv_unstable", "serde", "kv_unstable_serde"] }
 serde = { version = "1.0.162", features = ["serde_derive"] }
-tokio = { version = "1.28.0", features = ["full"] }
+tokio = { version = "1.28.1", features = ["full"] }
