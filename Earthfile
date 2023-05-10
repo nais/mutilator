@@ -14,13 +14,16 @@ chef-planner:
     RUN cargo chef prepare --recipe-path recipe.json
     SAVE ARTIFACT recipe.json
 
-build:
+chef-cook:
     FROM +prepare
     COPY +chef-planner/recipe.json recipe.json
     RUN cargo chef cook --recipe-path recipe.json --release --target x86_64-unknown-linux-musl
+    SAVE IMAGE --push ghcr.io/nais/mutilator/cache:chef-cook
+
+build:
+    FROM +chef-cook
 
     COPY --dir src Cargo.lock Cargo.toml .
-    ENV RUST_BACKTRACE=1
     RUN cargo build --release --target x86_64-unknown-linux-musl
 
     SAVE ARTIFACT target/x86_64-unknown-linux-musl/release/mutilator mutilator
@@ -30,6 +33,7 @@ docker:
     FROM cgr.dev/chainguard/static
     # Explicitly build these targets so that the cache images are pushed
     BUILD +prepare
+    BUILD +chef-cook
     BUILD +build
 
     WORKDIR /
