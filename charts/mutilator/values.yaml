@@ -41,6 +41,9 @@ securityContext:
   seccompProfile:
     type: RuntimeDefault
 
+deployment:
+  containerPort: 3000
+
 service:
   type: ClusterIP
   port: 80
