@@ -28,6 +28,10 @@ build:
 
 docker:
     FROM cgr.dev/chainguard/static
+    # Explicitly build these targets so that the cache images are pushed
+    BUILD +prepare
+    BUILD +build
+
     WORKDIR /
     COPY +build/mutilator /
 
