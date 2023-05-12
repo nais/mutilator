@@ -743,6 +743,7 @@ dependencies = [
  "env_logger",
  "figment",
  "json",
+ "json-patch",
  "k8s-openapi",
  "kube",
  "log",
