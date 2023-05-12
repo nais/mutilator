@@ -3,7 +3,7 @@ FROM rust:1
 
 prepare:
     FROM rust:1
-    RUN cargo install cargo-chef
+    RUN cargo install cargo-chef kopium
     RUN apt-get --yes update && apt-get --yes install cmake musl-tools
     RUN rustup target add x86_64-unknown-linux-musl
     SAVE IMAGE --push ghcr.io/nais/mutilator/cache:prepare
@@ -28,6 +28,13 @@ build:
 
     SAVE ARTIFACT target/x86_64-unknown-linux-musl/release/mutilator mutilator
     SAVE IMAGE --push ghcr.io/nais/mutilator/cache:build
+
+aiven-types:
+    FROM +prepare
+    RUN for type in redis; do \
+            curl -sSL https://raw.githubusercontent.com/aiven/aiven-operator/main/config/crd/bases/aiven.io_${type}.yaml | kopium -Af - > aiven_${type}.rs; \
+        done
+    SAVE ARTIFACT aiven_*.rs AS LOCAL src/aiven_types/
 
 docker:
     FROM cgr.dev/chainguard/static
