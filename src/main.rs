@@ -8,6 +8,7 @@ use log::info;
 
 mod logging;
 mod web;
+mod aiven_types;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub enum LogFormat {
