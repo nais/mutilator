@@ -1,0 +1,40 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "mutilator.fullname" . }}
+  labels:
+      {{- include "mutilator.labels" . | nindent 4 }}
+spec:
+  selfSigned: { }
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "mutilator.fullname" . }}
+  labels:
+    {{- include "mutilator.labels" . | nindent 4 }}
+spec:
+  duration: 8760h
+  renewBefore: 8000h
+  subject:
+    organizations:
+      - nais.io
+  commonName: {{ include "mutilator.fullname" . }}.{{ .Release.Namespace }}
+  isCA: false
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth
+  dnsNames:
+    - {{ include "mutilator.fullname" . }}
+    - {{ include "mutilator.fullname" . }}.{{ .Release.Namespace }}
+    - {{ include "mutilator.fullname" . }}.{{ .Release.Namespace }}.svc
+  issuerRef:
+    kind: Issuer
+    name: {{ include "mutilator.fullname" . }}
+  secretName: {{ include "mutilator.fullname" . }}-certs

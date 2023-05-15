@@ -42,6 +42,14 @@ spec:
               value: {{ .Values.tenant.name }}
             - name: MUTILATOR__TENANT__ENVIRONMENT
               value: {{ .Values.tenant.environment }}
+            - name: MUTILATOR__WEB__CERTIFICATE_PATH
+              value: /var/run/certificates/tls.crt
+            - name: MUTILATOR__WEB__PRIVATE_KEY_PATH
+              value: /var/run/certificates/tls.key
+          volumeMounts:
+            - mountPath: /var/run/certificates
+              name: certificates
+              readOnly: true
           ports:
             - name: http
               containerPort: {{ .Values.deployment.containerPort }}
@@ -68,3 +76,7 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      volumes:
+        - name: certificates
+          secret:
+            secretName: {{ include "mutilator.fullname" . }}-certs
