@@ -6,6 +6,7 @@ use axum::http::StatusCode;
 use axum::Router;
 use axum::routing::{get, post};
 use axum_server::tls_rustls::RustlsConfig;
+use json_patch::Patch;
 use kube::core::admission::{AdmissionResponse, AdmissionReview};
 use kube::core::DynamicObject;
 use kube::ResourceExt;
@@ -63,9 +64,9 @@ async fn mutate_handler(State(config): State<Arc<Config>>, Json(admission_review
                     Ok(res) => {
                         info!(name = name, namespace = namespace; "Processing complete");
                         res
-                    },
+                    }
                     Err(err) => {
-                        warn!(name = name, namespace = namespace; "Processing failed");
+                        warn!(name = name, namespace = namespace; "Processing failed: {}", err.to_string());
                         res.deny(err.to_string())
                     }
                 };
@@ -83,7 +84,7 @@ fn mutate(res: AdmissionResponse, obj: &Redis, config: &Arc<Config>) -> Result<A
         patches.push(json_patch::PatchOperation::Add(json_patch::AddOperation {
             path: "/spec/project_vpc_id".to_string(),
             value: Value::from(config.project_vpc_id.clone()),
-        }))
+        }));
     }
-    Ok(res.with_patch(json_patch::Patch(patches))?)
+    Ok(res.with_patch(Patch(patches))?)
 }
