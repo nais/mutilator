@@ -33,17 +33,26 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default "latest" }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: MUTILATOR__PROJECT_VPC_ID
+              value: {{ .Values.project_vpc_id }}
+            - name: MUTILATOR__LOCATION
+              value: {{ .Values.location }}
+            - name: MUTILATOR__TENANT__NAME
+              value: {{ .Values.tenant.name }}
+            - name: MUTILATOR__TENANT__ENVIRONMENT
+              value: {{ .Values.tenant.environment }}
           ports:
             - name: http
               containerPort: {{ .Values.deployment.containerPort }}
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /
+              path: /is_alive
               port: http
           readinessProbe:
             httpGet:
-              path: /
+              path: /is_ready
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
