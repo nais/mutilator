@@ -35,7 +35,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - name: MUTILATOR__PROJECT_VPC_ID
-              value: {{ .Values.project_vpc_id }}
+              value: {{ .Values.project_vpc_id | splitList "/" | last }}
             - name: MUTILATOR__LOCATION
               value: {{ .Values.location }}
             - name: MUTILATOR__TENANT__NAME
