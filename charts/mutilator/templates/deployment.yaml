@@ -51,17 +51,19 @@ spec:
               name: certificates
               readOnly: true
           ports:
-            - name: http
+            - name: https
               containerPort: {{ .Values.deployment.containerPort }}
               protocol: TCP
           livenessProbe:
             httpGet:
               path: /is_alive
-              port: http
+              port: https
+              scheme: https
           readinessProbe:
             httpGet:
               path: /is_ready
-              port: http
+              port: https
+              scheme: https
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
