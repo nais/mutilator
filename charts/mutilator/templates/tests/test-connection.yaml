@@ -11,5 +11,7 @@ spec:
     - name: wget
       image: busybox
       command: ['wget']
-      args: ['{{ include "mutilator.fullname" . }}:{{ .Values.service.port }}']
+      args:
+        - --no-check-certificate
+        - 'https://{{ include "mutilator.fullname" . }}'
   restartPolicy: Never
