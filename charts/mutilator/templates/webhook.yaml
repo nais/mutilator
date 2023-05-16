@@ -15,7 +15,7 @@ webhooks:
       service:
         name: {{ include "mutilator.fullname" . }}
         namespace: {{ .Release.Namespace }}
-        port: {{ .Values.service.port }}
+        port: 443
         path: /mutate
     rules:
       - operations: ["CREATE", "UPDATE"]

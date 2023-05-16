@@ -58,12 +58,12 @@ spec:
             httpGet:
               path: /is_alive
               port: https
-              scheme: https
+              scheme: HTTPS
           readinessProbe:
             httpGet:
               path: /is_ready
               port: https
-              scheme: https
+              scheme: HTTPS
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
