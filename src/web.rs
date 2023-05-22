@@ -10,7 +10,7 @@ use json_patch::Patch;
 use kube::core::admission::{AdmissionResponse, AdmissionReview};
 use kube::core::DynamicObject;
 use kube::ResourceExt;
-use log::{info, warn};
+use tracing::{info, warn};
 use serde_json::Value;
 
 use crate::aiven_types::aiven_redis::Redis;
@@ -61,20 +61,20 @@ async fn mutate_handler(State(config): State<Arc<Config>>, Json(admission_review
             if let Some(obj) = &req.object {
                 let name = obj.name_any();
                 let namespace = obj.namespace().unwrap();
-                info!(uid = uid, name = name, namespace = namespace; "Processing redis resource");
+                info!(uid = uid, name = name, namespace = namespace, "Processing redis resource");
                 res = match mutate(res.clone(), &obj, &config) {
                     Ok(res) => {
-                        info!(uid = uid, name = name, namespace = namespace; "Processing complete");
+                        info!(uid = uid, name = name, namespace = namespace, "Processing complete");
                         res
                     }
                     Err(err) => {
-                        warn!(uid = uid, name = name, namespace = namespace; "Processing failed: {}", err.to_string());
+                        warn!(uid = uid, name = name, namespace = namespace, "Processing failed: {}", err.to_string());
                         res.deny(err.to_string())
                     }
                 };
                 (StatusCode::OK, Json(res.into_review()))
             } else {
-                warn!(uid = uid; "No object specified in AdmissionRequest: {:?}", req);
+                warn!(uid = uid, "No object specified in AdmissionRequest: {:?}", req);
                 (StatusCode::BAD_REQUEST, Json(AdmissionResponse::invalid("no object specified").into_review()))
             }
         }

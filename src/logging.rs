@@ -1,57 +1,30 @@
-use std::io::Write;
-
 use anyhow::Result;
-use json::JsonValue;
-use log::{info, LevelFilter};
-use log::kv::{Error, Key, Value};
+use tracing::{info, Level};
+use tracing_subscriber::filter;
+use tracing_subscriber::prelude::*;
 
 use crate::{Config, LogFormat};
 
-struct JsonVisitor<'a> {
-    data: &'a mut JsonValue
-}
-
-impl JsonVisitor<'_> {
-    fn new(data: &mut JsonValue) -> JsonVisitor {
-        return JsonVisitor {
-            data,
-        };
-    }
-}
-
-impl<'kvs> log::kv::Visitor<'kvs> for JsonVisitor<'kvs> {
-    fn visit_pair(&mut self, key: Key<'kvs>, value: Value<'kvs>) -> std::result::Result<(), Error> {
-        self.data[key.to_string()] = JsonValue::from(value.to_string());
-        Ok(())
-    }
-}
-
-
 pub fn init_logging(config: &Config) -> Result<()> {
+    let filter = filter::Targets::new()
+        .with_default(&config.log_level)
+        .with_target("axum::rejection", Level::TRACE);
     match config.log_format {
         LogFormat::Plain => {
-            env_logger::builder()
-                .filter_level(config.log_level)
-                .filter_module("axum::rejection", LevelFilter::Trace)
-                .target(env_logger::Target::Stdout)
-                .default_format()
+            let fmt_layer = tracing_subscriber::fmt::layer()
+                .compact();
+            tracing_subscriber::registry()
+                .with(filter)
+                .with(fmt_layer)
                 .init();
         }
         LogFormat::Json => {
-            env_logger::builder()
-                .filter_level(config.log_level)
-                .filter_module("axum::rejection", LevelFilter::Trace)
-                .target(env_logger::Target::Stdout)
-                .format(|buf, record| {
-                    let mut data = json::object! {
-                        timestamp: buf.timestamp_seconds().to_string(),
-                        level: record.level().to_string(),
-                        message: record.args().to_string(),
-                    };
-                    let mut visitor = JsonVisitor::new(&mut data);
-                    record.key_values().visit(&mut visitor).unwrap();
-                    writeln!(buf, "{}", json::stringify(data))
-                })
+            let fmt_layer = tracing_subscriber::fmt::layer()
+                .json()
+                .flatten_event(true);
+            tracing_subscriber::registry()
+                .with(fmt_layer)
+                .with(filter)
                 .init();
         }
     };

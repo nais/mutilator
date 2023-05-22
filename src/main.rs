@@ -1,11 +1,13 @@
+use std::fmt::Debug;
 use std::path::PathBuf;
 
 use anyhow::Result;
 use atty::Stream;
 use figment::Figment;
-use figment::providers::{Env, Yaml, Format};
-use log::info;
+use figment::providers::{Env, Format, Yaml};
 use serde::{Deserialize, Serialize};
+use tracing::info;
+use tracing::level_filters::LevelFilter;
 
 mod logging;
 mod web;
@@ -15,6 +17,27 @@ mod aiven_types;
 pub enum LogFormat {
     Plain,
     Json,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub enum LogLevel {
+    Trace = 0,
+    Debug = 1,
+    Info = 2,
+    Warn = 3,
+    Error = 4,
+}
+
+impl Into<LevelFilter> for &LogLevel {
+    fn into(self) -> LevelFilter {
+        match self {
+            LogLevel::Trace => LevelFilter::TRACE,
+            LogLevel::Debug => LevelFilter::DEBUG,
+            LogLevel::Info => LevelFilter::INFO,
+            LogLevel::Warn => LevelFilter::WARN,
+            LogLevel::Error => LevelFilter::ERROR,
+        }
+    }
 }
 
 impl Default for LogFormat {
@@ -48,7 +71,7 @@ pub struct Config {
     #[serde(default)]
     log_format: LogFormat,
     // Log level
-    log_level: log::LevelFilter,
+    log_level: LogLevel,
     // Configure web server
     web: WebConfig,
     // Tenant details
