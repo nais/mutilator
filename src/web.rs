@@ -10,12 +10,13 @@ use json_patch::Patch;
 use kube::core::admission::{AdmissionResponse, AdmissionReview};
 use kube::core::DynamicObject;
 use kube::ResourceExt;
-use tracing::{info, warn};
+use tracing::{info, instrument, info_span, warn};
 use serde_json::Value;
 
 use crate::aiven_types::aiven_redis::Redis;
 use crate::Config;
 
+#[instrument(skip_all)]
 pub async fn start_web_server(config: Config) -> Result<()> {
     let certificate_path = config.web.certificate_path.clone();
     let private_key_path = config.web.private_key_path.clone();
@@ -49,6 +50,7 @@ pub async fn start_web_server(config: Config) -> Result<()> {
 }
 
 #[debug_handler]
+#[instrument(skip_all)]
 async fn mutate_handler(State(config): State<Arc<Config>>, Json(admission_review): Json<AdmissionReview<Redis>>) -> (StatusCode, Json<AdmissionReview<DynamicObject>>) {
     match admission_review.request {
         None => {
@@ -58,29 +60,34 @@ async fn mutate_handler(State(config): State<Arc<Config>>, Json(admission_review
         Some(req) => {
             let uid = req.uid.clone();
             let mut res = AdmissionResponse::from(&req);
+            let req_span = info_span!("request", uid);
+            let _req_guard = req_span.enter();
             if let Some(obj) = &req.object {
                 let name = obj.name_any();
                 let namespace = obj.namespace().unwrap();
-                info!(uid = uid, name = name, namespace = namespace, "Processing redis resource");
+                let redis_span = info_span!("redis", name, namespace);
+                let _redis_guard = redis_span.enter();
+                info!("Processing redis resource");
                 res = match mutate(res.clone(), &obj, &config) {
                     Ok(res) => {
-                        info!(uid = uid, name = name, namespace = namespace, "Processing complete");
+                        info!("Processing complete");
                         res
                     }
                     Err(err) => {
-                        warn!(uid = uid, name = name, namespace = namespace, "Processing failed: {}", err.to_string());
+                        warn!("Processing failed: {}", err.to_string());
                         res.deny(err.to_string())
                     }
                 };
                 (StatusCode::OK, Json(res.into_review()))
             } else {
-                warn!(uid = uid, "No object specified in AdmissionRequest: {:?}", req);
+                warn!("No object specified in AdmissionRequest: {:?}", req);
                 (StatusCode::BAD_REQUEST, Json(AdmissionResponse::invalid("no object specified").into_review()))
             }
         }
     }
 }
 
+#[instrument(skip_all)]
 fn mutate(res: AdmissionResponse, obj: &Redis, config: &Arc<Config>) -> Result<AdmissionResponse> {
     let mut patches = Vec::new();
     if obj.spec.project_vpc_id.is_none() {
