@@ -2,7 +2,7 @@ use std::io::Write;
 
 use anyhow::Result;
 use json::JsonValue;
-use log::info;
+use log::{info, LevelFilter};
 use log::kv::{Error, Key, Value};
 
 use crate::{Config, LogFormat};
@@ -32,6 +32,7 @@ pub fn init_logging(config: &Config) -> Result<()> {
         LogFormat::Plain => {
             env_logger::builder()
                 .filter_level(config.log_level)
+                .filter_module("axum::rejection", LevelFilter::Trace)
                 .target(env_logger::Target::Stdout)
                 .default_format()
                 .init();
@@ -39,6 +40,7 @@ pub fn init_logging(config: &Config) -> Result<()> {
         LogFormat::Json => {
             env_logger::builder()
                 .filter_level(config.log_level)
+                .filter_module("axum::rejection", LevelFilter::Trace)
                 .target(env_logger::Target::Stdout)
                 .format(|buf, record| {
                     let mut data = json::object! {

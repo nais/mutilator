@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.71"
 atty = "0.2.14"
-axum = "0.6.18"
+axum = { version = "0.6.18", features = ["tracing", "http2", "macros"] }
 axum-server = { version = "0.5.1", features = ["rustls", "tls-rustls"] }
 env_logger = "0.10.0"
 figment = { version = "0.10.8", features = ["env", "yaml"] }

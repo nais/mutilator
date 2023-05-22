@@ -3,7 +3,7 @@ use std::sync::Arc;
 use anyhow::Result;
 use axum::extract::{Json, State};
 use axum::http::StatusCode;
-use axum::Router;
+use axum::{debug_handler, Router};
 use axum::routing::{get, post};
 use axum_server::tls_rustls::RustlsConfig;
 use json_patch::Patch;
@@ -48,6 +48,7 @@ pub async fn start_web_server(config: Config) -> Result<()> {
     Ok(())
 }
 
+#[debug_handler]
 async fn mutate_handler(State(config): State<Arc<Config>>, Json(admission_review): Json<AdmissionReview<Redis>>) -> (StatusCode, Json<AdmissionReview<DynamicObject>>) {
     match admission_review.request {
         None => {
