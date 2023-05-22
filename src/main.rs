@@ -63,7 +63,7 @@ fn main() -> Result<()> {
     let defaults = "\
 log_level: Info
 web:
-    bind_address: 0.0.0.0:3000
+    bind_address: 0.0.0.0:9443
 tenant:
     environment: local
     name: local

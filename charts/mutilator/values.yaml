@@ -50,7 +50,7 @@ securityContext:
     type: RuntimeDefault
 
 deployment:
-  containerPort: 3000
+  containerPort: 9443
 
 resources:
   limits:
