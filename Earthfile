@@ -31,6 +31,7 @@ build:
 
 aiven-types:
     FROM +prepare
+    RUN echo 'WARNING!!! This will overwrite the generated types. Have you checked that https://github.com/aiven/aiven-operator/pull/413 has been merged?' && exit 1
     RUN for type in redis; do \
             curl -sSL https://raw.githubusercontent.com/aiven/aiven-operator/main/config/crd/bases/aiven.io_${type}.yaml | kopium -Af - > aiven_${type}.rs; \
         done

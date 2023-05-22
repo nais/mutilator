@@ -311,9 +311,11 @@ pub enum RedisUserConfigRedisPersistence {
 #[derive(Serialize, Deserialize, Clone, Debug, JsonSchema)]
 pub struct RedisStatus {
     /// Conditions represent the latest available observations of a service state
-    pub conditions: Vec<RedisStatusConditions>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub conditions: Option<Vec<RedisStatusConditions>>,
     /// Service state
-    pub state: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub state: Option<String>,
 }
 
 /// Condition contains details for one aspect of the current state of this API Resource. --- This struct is intended for direct use as an array at the field path .status.conditions.  For example, 
