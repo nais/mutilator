@@ -55,23 +55,25 @@ async fn mutate_handler(State(config): State<Arc<Config>>, Json(admission_review
             (StatusCode::BAD_REQUEST, Json(AdmissionResponse::invalid("missing request").into_review()))
         }
         Some(req) => {
+            let uid = req.uid.clone();
             let mut res = AdmissionResponse::from(&req);
             if let Some(obj) = &req.object {
                 let name = obj.name_any();
                 let namespace = obj.namespace().unwrap();
-                info!(name = name, namespace = namespace; "Processing redis resource");
+                info!(uid = uid, name = name, namespace = namespace; "Processing redis resource");
                 res = match mutate(res.clone(), &obj, &config) {
                     Ok(res) => {
-                        info!(name = name, namespace = namespace; "Processing complete");
+                        info!(uid = uid, name = name, namespace = namespace; "Processing complete");
                         res
                     }
                     Err(err) => {
-                        warn!(name = name, namespace = namespace; "Processing failed: {}", err.to_string());
+                        warn!(uid = uid, name = name, namespace = namespace; "Processing failed: {}", err.to_string());
                         res.deny(err.to_string())
                     }
                 };
                 (StatusCode::OK, Json(res.into_review()))
             } else {
+                warn!(uid = uid; "No object specified in AdmissionRequest: {:?}", req);
                 (StatusCode::BAD_REQUEST, Json(AdmissionResponse::invalid("no object specified").into_review()))
             }
         }
@@ -81,6 +83,7 @@ async fn mutate_handler(State(config): State<Arc<Config>>, Json(admission_review
 fn mutate(res: AdmissionResponse, obj: &Redis, config: &Arc<Config>) -> Result<AdmissionResponse> {
     let mut patches = Vec::new();
     if obj.spec.project_vpc_id.is_none() {
+        info!("Adding project_vpc_id");
         patches.push(json_patch::PatchOperation::Add(json_patch::AddOperation {
             path: "/spec/project_vpc_id".to_string(),
             value: Value::from(config.project_vpc_id.clone()),
