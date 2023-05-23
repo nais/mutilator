@@ -7,7 +7,7 @@ use axum::{debug_handler, Router};
 use axum::routing::{get, post};
 use axum_server::tls_rustls::RustlsConfig;
 use json_patch::Patch;
-use kube::core::admission::{AdmissionResponse, AdmissionReview};
+use kube::core::admission::{AdmissionRequest, AdmissionResponse, AdmissionReview};
 use kube::core::DynamicObject;
 use kube::ResourceExt;
 use tracing::{info, instrument, info_span, warn};
@@ -52,12 +52,12 @@ pub async fn start_web_server(config: Config) -> Result<()> {
 #[debug_handler]
 #[instrument(skip_all)]
 async fn mutate_handler(State(config): State<Arc<Config>>, Json(admission_review): Json<AdmissionReview<Redis>>) -> (StatusCode, Json<AdmissionReview<DynamicObject>>) {
-    match admission_review.request {
-        None => {
-            warn!("No request present in AdmissionReview object");
+    match <AdmissionReview<Redis> as TryInto<AdmissionRequest<Redis>>>::try_into(admission_review) {
+        Err(err) => {
+            warn!("Unable to get request from AdmissionReview: {}", err);
             (StatusCode::BAD_REQUEST, Json(AdmissionResponse::invalid("missing request").into_review()))
         }
-        Some(req) => {
+        Ok(req) => {
             let uid = req.uid.clone();
             let mut res = AdmissionResponse::from(&req);
             let req_span = info_span!("request", uid);
