@@ -76,10 +76,13 @@ jobs:
         uses: earthly/actions-setup@135d686cdc4619918fd1b542d0a08d61dd104518 # ratchet:earthly/actions-setup@v1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          use-cache: true
       - name: Build and possibly push mutilator
         env:
           EARTHLY_PUSH: "${{ github.ref == 'refs/heads/main' }}"
         run: |
+          printenv | grep EARTHLY
+          earthly config global.cache_size_pct 50
           earthly +docker --VERSION=${VERSION} --REGISTRY=${REGISTRY}
       - name: Retrieve image digest
         id: imgdigest
