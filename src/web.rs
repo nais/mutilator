@@ -52,38 +52,38 @@ pub async fn start_web_server(config: Config) -> Result<()> {
 #[debug_handler]
 #[instrument(skip_all)]
 async fn mutate_handler(State(config): State<Arc<Config>>, Json(admission_review): Json<AdmissionReview<Redis>>) -> (StatusCode, Json<AdmissionReview<DynamicObject>>) {
-    match <AdmissionReview<Redis> as TryInto<AdmissionRequest<Redis>>>::try_into(admission_review) {
+    let req: AdmissionRequest<Redis> = match admission_review.try_into() {
+        Ok(req) => req,
         Err(err) => {
-            warn!("Unable to get request from AdmissionReview: {}", err);
-            (StatusCode::BAD_REQUEST, Json(AdmissionResponse::invalid("missing request").into_review()))
+            warn!("Unable to get request from AdmissionReview: {}", err.to_string());
+            return (StatusCode::BAD_REQUEST, Json(AdmissionResponse::invalid("missing request").into_review()));
         }
-        Ok(req) => {
-            let uid = req.uid.clone();
-            let mut res = AdmissionResponse::from(&req);
-            let req_span = info_span!("request", uid);
-            let _req_guard = req_span.enter();
-            if let Some(obj) = &req.object {
-                let name = obj.name_any();
-                let namespace = obj.namespace().unwrap();
-                let redis_span = info_span!("redis", name, namespace);
-                let _redis_guard = redis_span.enter();
-                info!("Processing redis resource");
-                res = match mutate(res.clone(), &obj, &config) {
-                    Ok(res) => {
-                        info!("Processing complete");
-                        res
-                    }
-                    Err(err) => {
-                        warn!("Processing failed: {}", err.to_string());
-                        res.deny(err.to_string())
-                    }
-                };
-                (StatusCode::OK, Json(res.into_review()))
-            } else {
-                warn!("No object specified in AdmissionRequest: {:?}", req);
-                (StatusCode::BAD_REQUEST, Json(AdmissionResponse::invalid("no object specified").into_review()))
+    };
+
+    let uid = req.uid.clone();
+    let mut res = AdmissionResponse::from(&req);
+    let req_span = info_span!("request", uid);
+    let _req_guard = req_span.enter();
+    if let Some(obj) = &req.object {
+        let name = obj.name_any();
+        let namespace = obj.namespace().unwrap();
+        let redis_span = info_span!("redis", name, namespace);
+        let _redis_guard = redis_span.enter();
+        info!("Processing redis resource");
+        res = match mutate(res.clone(), &obj, &config) {
+            Ok(res) => {
+                info!("Processing complete");
+                res
             }
-        }
+            Err(err) => {
+                warn!("Processing failed: {}", err.to_string());
+                res.deny(err.to_string())
+            }
+        };
+        (StatusCode::OK, Json(res.into_review()))
+    } else {
+        warn!("No object specified in AdmissionRequest: {:?}", req);
+        (StatusCode::BAD_REQUEST, Json(AdmissionResponse::invalid("no object specified").into_review()))
     }
 }
 
