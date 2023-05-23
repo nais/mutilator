@@ -6,7 +6,7 @@ use axum::http::StatusCode;
 use axum::{debug_handler, Router};
 use axum::routing::{get, post};
 use axum_server::tls_rustls::RustlsConfig;
-use json_patch::Patch;
+use json_patch::{Patch, PatchOperation};
 use kube::core::admission::{AdmissionRequest, AdmissionResponse, AdmissionReview, Operation};
 use kube::core::DynamicObject;
 use kube::{Resource, ResourceExt};
@@ -96,12 +96,19 @@ async fn mutate_handler(State(config): State<Arc<Config>>, Json(admission_review
 #[instrument(skip_all)]
 fn mutate(res: AdmissionResponse, obj: &Redis, config: &Arc<Config>) -> Result<AdmissionResponse> {
     let mut patches = Vec::new();
+
+    add_project_vpc_id(config.project_vpc_id.clone(), obj, &mut patches);
+
+    Ok(res.with_patch(Patch(patches))?)
+}
+
+#[instrument(skip_all)]
+fn add_project_vpc_id(project_vpc_id: String, obj: &Redis, patches: &mut Vec<PatchOperation>) {
     if obj.spec.project_vpc_id.is_none() {
         info!("Adding projectVpcId");
-        patches.push(json_patch::PatchOperation::Add(json_patch::AddOperation {
+        patches.push(PatchOperation::Add(json_patch::AddOperation {
             path: "/spec/projectVpcId".into(),
-            value: Value::String(config.project_vpc_id.clone()),
+            value: Value::String(project_vpc_id),
         }));
     }
-    Ok(res.with_patch(Patch(patches))?)
 }
