@@ -9,7 +9,7 @@ use axum_server::tls_rustls::RustlsConfig;
 use json_patch::Patch;
 use kube::core::admission::{AdmissionRequest, AdmissionResponse, AdmissionReview, Operation};
 use kube::core::DynamicObject;
-use kube::ResourceExt;
+use kube::{Resource, ResourceExt};
 use tracing::{info, instrument, info_span, warn};
 use serde_json::Value;
 
@@ -103,5 +103,19 @@ fn mutate(res: AdmissionResponse, obj: &Redis, config: &Arc<Config>) -> Result<A
             value: Value::String(config.project_vpc_id.clone()),
         }));
     }
+
+    // Test if patches work at all
+    // Ensure labels exist before adding a key to it
+    if obj.meta().labels.is_none() {
+        patches.push(json_patch::PatchOperation::Add(json_patch::AddOperation {
+            path: "/metadata/labels".into(),
+            value: serde_json::json!({}),
+        }));
+    }
+    // Add our label
+    patches.push(json_patch::PatchOperation::Add(json_patch::AddOperation {
+        path: "/metadata/labels/admission".into(),
+        value: serde_json::Value::String("modified-by-admission-controller".into()),
+    }));
     Ok(res.with_patch(Patch(patches))?)
 }
