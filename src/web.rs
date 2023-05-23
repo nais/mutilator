@@ -100,8 +100,21 @@ fn mutate(res: AdmissionResponse, obj: &Redis, config: &Arc<Config>) -> Result<A
     add_project_vpc_id(config.project_vpc_id.clone(), obj, &mut patches);
     add_termination_protection(obj, &mut patches);
     add_tags(config, obj, &mut patches);
+    add_location(config.location.clone(), obj, &mut patches);
 
     Ok(res.with_patch(Patch(patches))?)
+}
+
+#[instrument(skip_all)]
+fn add_location(location: String, obj: &Redis, patches: &mut Vec<PatchOperation>) {
+    let cloud_name = Value::String(format!("google-{}", location));
+    if obj.spec.cloud_name.is_none() {
+        info!("Adding cloudName");
+        patches.push(add_patch("/spec/cloudName".into(), cloud_name));
+    } else {
+        info!("Overwriting cloudName");
+        patches.push(replace_patch("/spec/cloudName".into(), cloud_name));
+    }
 }
 
 #[instrument(skip_all)]

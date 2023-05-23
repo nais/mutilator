@@ -9,7 +9,7 @@ Things to mutate
 - [ ] plan
 - [ ] serviceIntegrations (prometheus ?)
 - [X] terminationProtection: true
-- [ ] cloudName: google-{{ .Values.location }}
+- [X] cloudName: google-{{ .Values.location }}
 - [X] tags: (environment, tenant, team)
 
 ## Building 
