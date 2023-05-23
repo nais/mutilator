@@ -10,7 +10,7 @@ use json_patch::Patch;
 use kube::core::admission::{AdmissionRequest, AdmissionResponse, AdmissionReview, Operation};
 use kube::core::DynamicObject;
 use kube::{Resource, ResourceExt};
-use tracing::{info, instrument, info_span, warn};
+use tracing::{info, instrument, info_span, warn, debug, error};
 use serde_json::Value;
 
 use crate::aiven_types::aiven_redis::Redis;
@@ -66,7 +66,7 @@ async fn mutate_handler(State(config): State<Arc<Config>>, Json(admission_review
     let _req_guard = req_span.enter();
 
     if req.operation != Operation::Create {
-        info!("Ignoring operation {:?}", req.operation);
+        debug!("Ignoring operation {:?}", req.operation);
         return (StatusCode::OK, Json(res.into_review()))
     }
 
@@ -82,7 +82,7 @@ async fn mutate_handler(State(config): State<Arc<Config>>, Json(admission_review
                 res
             }
             Err(err) => {
-                warn!("Processing failed: {}", err.to_string());
+                error!("Processing failed: {}", err.to_string());
                 res.deny(err.to_string())
             }
         };
