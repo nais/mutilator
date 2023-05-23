@@ -8,7 +8,7 @@ Things to mutate
 - [X] projectVpcId
 - [ ] plan
 - [ ] serviceIntegrations (prometheus ?)
-- [ ] terminationProtection: true
+- [X] terminationProtection: true
 - [ ] cloudName: google-{{ .Values.location }}
 - [ ] tags: (environment, tenant, team)
 

@@ -98,8 +98,20 @@ fn mutate(res: AdmissionResponse, obj: &Redis, config: &Arc<Config>) -> Result<A
     let mut patches = Vec::new();
 
     add_project_vpc_id(config.project_vpc_id.clone(), obj, &mut patches);
+    add_termination_protection(obj, &mut patches);
 
     Ok(res.with_patch(Patch(patches))?)
+}
+
+#[instrument(skip_all)]
+fn add_termination_protection(obj: &Redis, patches: &mut Vec<PatchOperation>) {
+    if obj.spec.termination_protection.is_none() {
+        info!("Enabling terminationProtection");
+        patches.push(PatchOperation::Add(json_patch::AddOperation {
+            path: "/spec/terminationProtection".into(),
+            value: Value::Bool(true),
+        }));
+    }
 }
 
 #[instrument(skip_all)]
