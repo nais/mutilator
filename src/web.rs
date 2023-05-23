@@ -97,25 +97,11 @@ async fn mutate_handler(State(config): State<Arc<Config>>, Json(admission_review
 fn mutate(res: AdmissionResponse, obj: &Redis, config: &Arc<Config>) -> Result<AdmissionResponse> {
     let mut patches = Vec::new();
     if obj.spec.project_vpc_id.is_none() {
-        info!("Adding project_vpc_id");
+        info!("Adding projectVpcId");
         patches.push(json_patch::PatchOperation::Add(json_patch::AddOperation {
-            path: "/spec/project_vpc_id".into(),
+            path: "/spec/projectVpcId".into(),
             value: Value::String(config.project_vpc_id.clone()),
         }));
     }
-
-    // Test if patches work at all
-    // Ensure labels exist before adding a key to it
-    if obj.meta().labels.is_none() {
-        patches.push(json_patch::PatchOperation::Add(json_patch::AddOperation {
-            path: "/metadata/labels".into(),
-            value: serde_json::json!({}),
-        }));
-    }
-    // Add our label
-    patches.push(json_patch::PatchOperation::Add(json_patch::AddOperation {
-        path: "/metadata/labels/admission".into(),
-        value: serde_json::Value::String("modified-by-admission-controller".into()),
-    }));
     Ok(res.with_patch(Patch(patches))?)
 }
