@@ -81,7 +81,6 @@ jobs:
         env:
           EARTHLY_PUSH: "${{ github.ref == 'refs/heads/main' }}"
         run: |
-          printenv | grep EARTHLY
           earthly config global.cache_size_pct 50
           earthly +docker --VERSION=${VERSION} --REGISTRY=${REGISTRY}
       - name: Retrieve image digest
