@@ -123,14 +123,12 @@ fn add_tags(config: &Arc<Config>, obj: &Redis, patches: &mut Vec<PatchOperation>
     let tenant = Value::String(config.tenant.name.clone());
     let team = Value::String(obj.meta().namespace.as_ref().unwrap().clone());
     if obj.spec.tags.is_none() {
-        info!("Adding tags map");
-        patches.push(add_patch("/spec/tags".into(), json!("{}")));
-        info!("Adding environment tag: {}", environment);
-        patches.push(add_patch("/spec/tags/environment".into(), environment));
-        info!("Adding tenant tag: {}", tenant);
-        patches.push(add_patch("/spec/tags/tenant".into(), tenant));
-        info!("Adding team tag: {}", team);
-        patches.push(add_patch("/spec/tags/team".into(), team));
+        info!("Adding tags");
+        patches.push(add_patch("/spec/tags".into(), json!({
+            "environment": environment,
+            "tenant": tenant,
+            "team": team
+        })));
     } else {
         let tags = obj.spec.tags.as_ref().unwrap();
         if tags.contains_key("environment") {
