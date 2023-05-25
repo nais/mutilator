@@ -100,6 +100,7 @@ fn mutate(res: AdmissionResponse, obj: &Redis, config: &Arc<Config>) -> Result<A
     mutators::add_termination_protection(obj, &mut patches);
     mutators::add_tags(config, obj, &mut patches);
     mutators::add_location(config.location.clone(), obj, &mut patches);
+    mutators::add_plan(config.plan.clone(), obj, &mut patches);
 
     Ok(res.with_patch(Patch(patches))?)
 }
