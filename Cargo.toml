@@ -10,7 +10,7 @@ anyhow = "1.0.71"
 atty = "0.2.14"
 axum = { version = "0.6.18", features = ["tracing", "http2", "macros"] }
 axum-server = { version = "0.5.1", features = ["rustls", "tls-rustls"] }
-figment = { version = "0.10.8", features = ["env", "yaml"] }
+figment = { version = "0.10.9", features = ["env", "yaml"] }
 json = "0.12.4"
 json-patch = "1.0.0"
 k8s-openapi = { version = "0.18.0", default-features = false, features = ["v1_24", "schemars"] }
