@@ -12,6 +12,7 @@ use tracing::level_filters::LevelFilter;
 mod logging;
 mod web;
 mod aiven_types;
+mod mutators;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub enum LogFormat {
