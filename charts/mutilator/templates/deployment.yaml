@@ -38,6 +38,8 @@ spec:
               value: {{ .Values.project_vpc_id | splitList "/" | last }}
             - name: MUTILATOR__LOCATION
               value: {{ .Values.location }}
+            - name: MUTILATOR__PLAN
+              value: {{ .Values.plan }}
             - name: MUTILATOR__TENANT__NAME
               value: {{ .Values.tenant.name }}
             - name: MUTILATOR__TENANT__ENVIRONMENT

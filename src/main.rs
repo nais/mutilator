@@ -81,6 +81,8 @@ pub struct Config {
     project_vpc_id: String,
     // Cloud location (eq. europe-north1)
     location: String,
+    // Default plan
+    plan: String,
 }
 
 fn main() -> Result<()> {
@@ -92,6 +94,7 @@ tenant:
     environment: local
     name: local
 location: europe-north1
+plan: hobbyist
     ";
     let config: Config = Figment::new()
         .merge(Yaml::string(defaults))
