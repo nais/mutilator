@@ -6,7 +6,6 @@ A mutating admission controller for Kubernetes that will enforce certain fields 
 Things to mutate
 
 - [X] projectVpcId
-- [ ] serviceIntegrations (prometheus ?)
 - [X] terminationProtection: true
 - [X] cloudName: google-{{ .Values.location }}
 - [X] tags: (environment, tenant, team)
