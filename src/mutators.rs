@@ -74,14 +74,6 @@ pub fn add_project_vpc_id(project_vpc_id: String, obj: &Redis, patches: &mut Vec
     }
 }
 
-#[instrument(skip_all)]
-pub fn add_plan(plan: String, obj: &Redis, patches: &mut Vec<PatchOperation>) {
-    if obj.spec.plan == "" {
-        info!("Adding plan");
-        patches.push(add_patch("/spec/plan".into(), Value::String(plan)));
-    }
-}
-
 fn add_patch(path: String, value: Value) -> PatchOperation {
     PatchOperation::Add(json_patch::AddOperation {
         path,
