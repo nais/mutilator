@@ -93,8 +93,8 @@
           pname = binary-name;
         });
       dockerTag =
-        if builtins.hasAttr "rev" self
-        then builtins.substring 0 8 self.rev
+        if nixpkgs.lib.hasAttr "revision" self
+        then "${self.revCount}-${self.shortRev}"
         else "gitDirty";
     in {
       checks = {
@@ -137,7 +137,7 @@
         rust = cargo-package;
         docker = pkgs.dockerTools.buildImage {
           name = "europe-north1-docker.pkg.dev/nais-io/nais/images/${binary-name}";
-          tag = "v${cargo-details.package.version}-${dockerTag}";
+          tag = "v${cargo-details.package.version}_${dockerTag}";
           extraCommands = ''mkdir -p data'';
           config = {
             Cmd = "--help";
