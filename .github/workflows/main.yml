@@ -116,6 +116,7 @@ jobs:
     name: Deploy to Fasit
     if: github.ref == 'refs/heads/main'
     runs-on: fasit-deploy
+    environment: fasit
     permissions:
       contents: read
       id-token: write
