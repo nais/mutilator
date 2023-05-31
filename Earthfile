@@ -11,7 +11,7 @@ prepare:
 
 chef-planner:
     FROM +prepare
-    COPY --dir src Cargo.lock Cargo.toml .
+    COPY --dir src .config Cargo.lock Cargo.toml .
     RUN cargo chef prepare --recipe-path recipe.json
     SAVE ARTIFACT recipe.json
 
@@ -24,11 +24,12 @@ chef-cook:
 build:
     FROM +chef-cook
 
-    COPY --dir src Cargo.lock Cargo.toml .
-    RUN cargo nextest run && \
+    COPY --dir src .config Cargo.lock Cargo.toml .
+    RUN cargo nextest run --profile ci && \
         cargo build --release --target x86_64-unknown-linux-musl
 
     SAVE ARTIFACT target/x86_64-unknown-linux-musl/release/mutilator mutilator
+    SAVE ARTIFACT target/nextest/ci/junit.xml AS LOCAL target/nextest/ci/junit.xml
     SAVE IMAGE --push ghcr.io/nais/mutilator/cache:build
 
 aiven-types:

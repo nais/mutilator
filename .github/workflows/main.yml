@@ -103,6 +103,12 @@ jobs:
       - name: Attest image
         if: github.ref == 'refs/heads/main'
         run: cosign attest --yes --predicate cyclone.sbom.json --type cyclonedx ${{ steps.imgdigest.outputs.digest }}
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: |
+            target/nextest/ci/*.xml
 
   deploy-fasit:
     name: Deploy to Fasit
