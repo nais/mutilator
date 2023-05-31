@@ -6,6 +6,7 @@ prepare:
     RUN cargo install cargo-chef kopium
     RUN apt-get --yes update && apt-get --yes install cmake musl-tools
     RUN rustup target add x86_64-unknown-linux-musl
+    RUN curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
     SAVE IMAGE --push ghcr.io/nais/mutilator/cache:prepare
 
 chef-planner:
@@ -24,7 +25,8 @@ build:
     FROM +chef-cook
 
     COPY --dir src Cargo.lock Cargo.toml .
-    RUN cargo build --release --target x86_64-unknown-linux-musl
+    RUN cargo nextest run && \
+        cargo build --release --target x86_64-unknown-linux-musl
 
     SAVE ARTIFACT target/x86_64-unknown-linux-musl/release/mutilator mutilator
     SAVE IMAGE --push ghcr.io/nais/mutilator/cache:build
