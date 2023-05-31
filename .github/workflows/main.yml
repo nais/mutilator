@@ -38,6 +38,8 @@ jobs:
       contents: read
       id-token: write
       packages: write
+      checks: write
+      pull-requests: write
     needs: setup
     env:
       VERSION: "${{ needs.setup.outputs.VERSION }}"
