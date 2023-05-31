@@ -3,10 +3,12 @@ FROM rust:1
 
 prepare:
     FROM rust:1
-    RUN cargo install cargo-chef kopium
     RUN apt-get --yes update && apt-get --yes install cmake musl-tools
     RUN rustup target add x86_64-unknown-linux-musl
+    RUN curl -LsSf https://github.com/cargo-bins/cargo-binstall/releases/latest/download/cargo-binstall-x86_64-unknown-linux-musl.tgz | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
+    RUN curl -LsSf https://github.com/kube-rs/kopium/releases/latest/download/kopium-linux-amd64 > ${CARGO_HOME:-~/.cargo}/bin/kopium && chmod a+x ${CARGO_HOME:-~/.cargo}/bin/kopium
     RUN curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
+    RUN cargo binstall --no-confirm --no-cleanup cargo-chef
     SAVE IMAGE --push ghcr.io/nais/mutilator/cache:prepare
 
 chef-planner:
