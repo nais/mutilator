@@ -7,9 +7,9 @@ use axum::http::StatusCode;
 use axum::routing::{get, post};
 use axum_server::tls_rustls::RustlsConfig;
 use json_patch::Patch;
-use kube::ResourceExt;
 use kube::core::admission::{AdmissionRequest, AdmissionResponse, AdmissionReview, Operation};
 use kube::core::DynamicObject;
+use kube::ResourceExt;
 use tracing::{debug, error, info, info_span, instrument, warn};
 
 use crate::{Config, mutators};
@@ -22,12 +22,7 @@ pub async fn start_web_server(config: Config) -> Result<()> {
     let addr = config.web.bind_address.parse().unwrap();
 
     let state = Arc::new(config);
-    let app = Router::new()
-        .route("/is_alive", get(|| async { "I'm alive!" }))
-        .route("/is_ready", get(|| async { "Ready for action!" }))
-        .route("/mutate", post(mutate_handler))
-        .with_state(state)
-        ;
+    let router = create_router(state);
 
     if certificate_path.is_some() && private_key_path.is_some() {
         let tls_config = RustlsConfig::from_pem_file(
@@ -36,16 +31,26 @@ pub async fn start_web_server(config: Config) -> Result<()> {
             .await?;
         info!("Starting webserver on {} using https", addr);
         axum_server::bind_rustls(addr, tls_config)
-            .serve(app.into_make_service())
+            .serve(router.into_make_service())
             .await?;
     } else {
         info!("Starting webserver on {} using http", addr);
         axum_server::bind(addr)
-            .serve(app.into_make_service())
+            .serve(router.into_make_service())
             .await?;
     }
 
     Ok(())
+}
+
+fn create_router(state: Arc<Config>) -> Router {
+    let router = Router::new()
+        .route("/is_alive", get(|| async { "I'm alive!" }))
+        .route("/is_ready", get(|| async { "Ready for action!" }))
+        .route("/mutate", post(mutate_handler))
+        .with_state(state)
+        ;
+    router
 }
 
 #[debug_handler]
@@ -102,4 +107,101 @@ fn mutate(res: AdmissionResponse, obj: &Redis, config: &Arc<Config>) -> Result<A
     mutators::add_location(config.location.clone(), obj, &mut patches);
 
     Ok(res.with_patch(Patch(patches))?)
+}
+
+
+#[cfg(test)]
+mod tests {
+    use std::fs::File;
+    use std::io::BufReader;
+    use std::path::PathBuf;
+    use std::sync::Arc;
+
+    use axum_test::{TestResponse, TestServer};
+    use json_patch::Patch;
+    use kube::core::DynamicObject;
+    use kube::core::admission::AdmissionReview;
+    use pretty_assertions::assert_eq;
+    use rstest::*;
+    use serde::{Deserialize, Serialize};
+
+    use serde_yaml;
+
+    use crate::{Config, LogLevel, Tenant, WebConfig};
+    use crate::web::create_router;
+
+    #[derive(Serialize,Deserialize,Debug)]
+    pub struct Asserts {
+        status_code: u16,
+        num_patches: usize,
+    }
+
+    #[derive(Serialize,Deserialize,Debug)]
+    pub struct TestData {
+        admission_review: AdmissionReview<DynamicObject>,
+        asserts: Asserts,
+    }
+
+    #[fixture]
+    pub fn test_server() -> TestServer {
+        let state = Arc::new(Config {
+            log_format: Default::default(),
+            log_level: LogLevel::Trace,
+            web: WebConfig {
+                bind_address: "".to_string(),
+                certificate_path: None,
+                private_key_path: None,
+            },
+            tenant: Tenant {
+                environment: "test-tenant-env".to_string(),
+                name: "test-tenant-name".to_string()
+            },
+            project_vpc_id: "test-vpc-id".to_string(),
+            location: "test-location".to_string(),
+        });
+        let router = create_router(state);
+        TestServer::new(router.into_make_service()).unwrap()
+    }
+
+    #[fixture]
+    pub fn test_dir() -> PathBuf {
+        let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/test_data/");
+        root
+    }
+
+    fn test_data(path: PathBuf, file_name: &str) -> TestData {
+        let reader = BufReader::new(File::open(path.join(file_name)).unwrap());
+        serde_yaml::from_reader(reader).unwrap()
+    }
+
+    #[rstest]
+    #[case("golden_redis.yaml")]
+    #[case("redis_with_all_tags.yaml")]
+    #[tokio::test]
+    async fn test_mutate(test_server: TestServer, test_dir: PathBuf, #[case] file_name: &str) {
+        let test_data = test_data(test_dir, file_name);
+        let resp = test_server.post("/mutate").content_type(&"application/json").json(&test_data.admission_review).await;
+        assert_eq!(resp.status_code(), test_data.asserts.status_code);
+        let admission_result: AdmissionReview<DynamicObject> = resp.json();
+        let admission_response = admission_result.response.as_ref().unwrap();
+        println!("{:?}", &admission_result);
+        assert!(admission_response.allowed);
+        let patch = admission_response.patch.as_ref();
+        if test_data.asserts.num_patches > 0 {
+            assert!(patch.is_some());
+            let patches: Patch = serde_json::from_slice(patch.unwrap().as_slice()).unwrap();
+            assert_eq!(patches.len(), test_data.asserts.num_patches);
+        } else {
+            assert!(patch.is_none());
+        }
+    }
+
+    #[rstest]
+    #[case::liveness("/is_alive")]
+    #[case::readiness("/is_ready")]
+    #[tokio::test]
+    async fn test_probes(test_server: TestServer, #[case] path: &str) {
+        let resp = test_server.get(path).await;
+        assert_eq!(resp.status_code(), 200);
+    }
 }
