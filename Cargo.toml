@@ -23,6 +23,8 @@ tokio = { version = "1.28.2", features = ["full"] }
 tracing = "0.1.37"
 tracing-subscriber = { version = "0.3.17", features = ["fmt", "json"] }
 async-std = { version = "1.5", features = ["attributes"] }
+tracing-opentelemetry = "0.19.0"
+opentelemetry = "0.19.0"
 
 [dev-dependencies]
 axum-test = "9.1.0"
