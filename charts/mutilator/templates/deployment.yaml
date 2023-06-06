@@ -46,6 +46,8 @@ spec:
               value: /var/run/certificates/tls.crt
             - name: MUTILATOR__WEB__PRIVATE_KEY_PATH
               value: /var/run/certificates/tls.key
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://tempo-distributor.nais-system:4317
           volumeMounts:
             - mountPath: /var/run/certificates
               name: certificates
