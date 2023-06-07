@@ -127,6 +127,7 @@ mod tests {
     pub fn test_load_config() {
         Jail::expect_with(|jail| {
             jail.set_env("MUTILATOR__LOCATION", "my-location");
+            jail.set_env("MUTILATOR__PROJECT_VPC_ID", "my-vpc-id");
 
             let config = load_config()?;
 
