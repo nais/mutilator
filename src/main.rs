@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 use std::path::PathBuf;
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use atty::Stream;
 use figment::Figment;
 use figment::providers::{Env, Format, Yaml};
@@ -84,6 +84,12 @@ pub struct Config {
 }
 
 fn main() -> Result<()> {
+    let config = load_config().map_err(|e| anyhow!(e))?;
+    app(config)?;
+    Ok(())
+}
+
+fn load_config() -> Result<Config, figment::Error> {
     let defaults = "\
 log_level: Info
 web:
@@ -93,12 +99,10 @@ tenant:
     name: local
 location: europe-north1
     ";
-    let config: Config = Figment::new()
+    Figment::new()
         .merge(Yaml::string(defaults))
         .merge(Env::prefixed("MUTILATOR__").split("__"))
-        .extract()?;
-    app(config)?;
-    Ok(())
+        .extract()
 }
 
 #[tokio::main]
@@ -109,4 +113,26 @@ async fn app(config: Config) -> Result<()> {
     web::start_web_server(config).await?;
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use figment::Jail;
+    use pretty_assertions::assert_eq;
+    use rstest::*;
+
+    use super::*;
+
+    #[rstest]
+    pub fn test_load_config() {
+        Jail::expect_with(|jail| {
+            jail.set_env("MUTILATOR__LOCATION", "my-location");
+
+            let config = load_config()?;
+
+            assert_eq!(config.location, "my-location");
+
+            Ok(())
+        })
+    }
 }
