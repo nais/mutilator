@@ -3,8 +3,13 @@ FROM rust:1
 
 prepare:
     FROM rust:1
+    WORKDIR /code
+
+    ENV CARGO_BUILD_TARGET=x86_64-unknown-linux-musl
+
     RUN apt-get --yes update && apt-get --yes install cmake musl-tools
-    RUN rustup target add x86_64-unknown-linux-musl
+    RUN rustup target add "${CARGO_BUILD_TARGET}"
+
     RUN curl -LsSf https://github.com/cargo-bins/cargo-binstall/releases/latest/download/cargo-binstall-x86_64-unknown-linux-musl.tgz | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
     RUN curl -LsSf https://github.com/kube-rs/kopium/releases/latest/download/kopium-linux-amd64 > ${CARGO_HOME:-~/.cargo}/bin/kopium && chmod a+x ${CARGO_HOME:-~/.cargo}/bin/kopium
     RUN curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
@@ -20,17 +25,17 @@ chef-planner:
 chef-cook:
     FROM +prepare
     COPY +chef-planner/recipe.json recipe.json
-    RUN cargo chef cook --recipe-path recipe.json --release --target x86_64-unknown-linux-musl
+    RUN cargo chef cook --recipe-path recipe.json --release
     SAVE IMAGE --push ghcr.io/nais/mutilator/cache:chef-cook
 
 build:
     FROM +chef-cook
 
     COPY --dir src .config Cargo.lock Cargo.toml .
-    RUN cargo nextest run --profile ci && \
-        cargo build --release --target x86_64-unknown-linux-musl
+    RUN cargo build --release
+    RUN cargo nextest run --profile ci --release
 
-    SAVE ARTIFACT target/x86_64-unknown-linux-musl/release/mutilator mutilator
+    SAVE ARTIFACT target/${CARGO_BUILD_TARGET}/release/mutilator mutilator
     SAVE ARTIFACT target/nextest/ci/junit.xml AS LOCAL target/nextest/ci/junit.xml
     SAVE IMAGE --push ghcr.io/nais/mutilator/cache:build
 
