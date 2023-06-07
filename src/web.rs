@@ -117,7 +117,7 @@ mod tests {
     use std::path::PathBuf;
     use std::sync::Arc;
 
-    use axum_test::{TestResponse, TestServer};
+    use axum_test::TestServer;
     use json_patch::Patch;
     use kube::core::DynamicObject;
     use kube::core::admission::AdmissionReview;
