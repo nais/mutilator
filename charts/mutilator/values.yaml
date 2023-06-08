@@ -5,6 +5,7 @@
 # Application config
 project_vpc_id: "" # Mapped in fasit
 location: "" # Mapped in fasit
+cluster_name: "" # Mapped in fasit
 tenant:
   name: "" # Mapped in fasit
   environment: "" # Mapped in fasit
