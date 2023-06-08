@@ -92,26 +92,38 @@ location: europe-north1
 
 #[cfg(test)]
 mod tests {
-    use figment::Jail;
+    use std::ffi::OsString;
+    use envtestkit::lock::lock_test;
+    use envtestkit::set_env;
     use pretty_assertions::assert_eq;
     use rstest::*;
     use super::*;
 
     const LOCATION: &'static str = "my-location";
+    const LOCATION_KEY: &'static str = "MUTILATOR__LOCATION";
     const PROJECT_VPC_ID: &'static str = "my-vpc-id";
+    const PROJECT_VPC_ID_KEY: &'static str = "MUTILATOR__PROJECT_VPC_ID";
+    const BIND_ADDRESS: &'static str = "127.0.0.1:9443";
+    const BIND_ADDRESS_KEY: &'static str = "MUTILATOR__WEB__BIND_ADDRESS";
 
     #[rstest]
-    pub fn test_load_config() {
-        Jail::expect_with(|jail| {
-            jail.set_env("MUTILATOR__LOCATION", LOCATION);
-            jail.set_env("MUTILATOR__PROJECT_VPC_ID", PROJECT_VPC_ID);
+    #[case(LOCATION_KEY, LOCATION, LOCATION)]
+    #[case(LOCATION_KEY, "europe-north1", "")]
+    #[case(PROJECT_VPC_ID_KEY, PROJECT_VPC_ID, PROJECT_VPC_ID)]
+    #[case(BIND_ADDRESS_KEY, BIND_ADDRESS, BIND_ADDRESS)]
+    pub fn test_load_config(#[case] key: &str, #[case] expected: &str, #[case] value: &str) {
+        let _lock = lock_test();
+        let _g1 = set_env(OsString::from(key), value);
 
-            let config = load_config()?;
+        let config = load_config().unwrap();
 
-            assert_eq!(config.location, LOCATION);
-            assert_eq!(config.project_vpc_id, PROJECT_VPC_ID);
-
-            Ok(())
-        })
+        match key {
+            LOCATION_KEY => { assert_eq!(config.location, expected) }
+            PROJECT_VPC_ID_KEY => { assert_eq!(config.project_vpc_id, expected) }
+            BIND_ADDRESS_KEY => { assert_eq!(config.web.bind_address, expected) }
+            _ => {
+                panic!("Unmatched configuration key in test")
+            }
+        }
     }
 }
