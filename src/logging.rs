@@ -11,7 +11,7 @@ use tracing_subscriber::{filter, Registry};
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::prelude::*;
 
-use crate::{Config, LogFormat};
+use crate::settings::{Config, LogFormat};
 
 pub fn init_logging(config: &Config) -> Result<()> {
     let filter = filter::Targets::new()

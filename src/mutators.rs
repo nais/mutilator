@@ -7,7 +7,7 @@ use serde_json::{json, Value};
 use tracing::{debug, info, instrument};
 
 use crate::aiven_types::aiven_redis::Redis;
-use crate::Config;
+use crate::settings::Config;
 
 #[instrument(skip_all)]
 pub fn add_location(location: String, obj: &Redis, patches: &mut Vec<PatchOperation>) {
@@ -99,11 +99,11 @@ fn replace_patch(path: String, value: Value) -> PatchOperation {
 mod tests {
     use std::collections::{BTreeMap, BTreeSet};
     use k8s_openapi::apimachinery::pkg::apis::meta::v1::ObjectMeta;
-    use pretty_assertions::{assert_eq};
+    use pretty_assertions::assert_eq;
     use rstest::*;
 
-    use crate::{LogLevel, Tenant, WebConfig};
     use crate::aiven_types::aiven_redis::RedisSpec;
+    use crate::settings::{LogLevel, Tenant, WebConfig};
 
     use super::*;
 

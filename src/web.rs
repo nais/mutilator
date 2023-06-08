@@ -12,8 +12,9 @@ use kube::core::DynamicObject;
 use kube::ResourceExt;
 use tracing::{debug, error, info, info_span, instrument, warn};
 
-use crate::{Config, mutators};
+use crate::mutators;
 use crate::aiven_types::aiven_redis::Redis;
+use crate::settings::Config;
 
 #[instrument(skip_all)]
 pub async fn start_web_server(config: Config) -> Result<()> {
@@ -127,7 +128,7 @@ mod tests {
 
     use serde_yaml;
 
-    use crate::{Config, LogLevel, Tenant, WebConfig};
+    use crate::settings::{Config, LogLevel, Tenant, WebConfig};
     use crate::web::create_router;
 
     #[derive(Serialize,Deserialize,Debug)]
