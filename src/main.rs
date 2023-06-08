@@ -123,15 +123,19 @@ mod tests {
 
     use super::*;
 
+    const LOCATION: &'static str = "my-location";
+    const PROJECT_VPC_ID: &'static str = "my-vpc-id";
+
     #[rstest]
     pub fn test_load_config() {
         Jail::expect_with(|jail| {
-            jail.set_env("MUTILATOR__LOCATION", "my-location");
-            jail.set_env("MUTILATOR__PROJECT_VPC_ID", "my-vpc-id");
+            jail.set_env("MUTILATOR__LOCATION", LOCATION);
+            jail.set_env("MUTILATOR__PROJECT_VPC_ID", PROJECT_VPC_ID);
 
             let config = load_config()?;
 
-            assert_eq!(config.location, "my-location");
+            assert_eq!(config.location, LOCATION);
+            assert_eq!(config.project_vpc_id, PROJECT_VPC_ID);
 
             Ok(())
         })
