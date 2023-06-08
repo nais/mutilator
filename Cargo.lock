@@ -1136,6 +1136,7 @@ dependencies = [
  "log",
  "opentelemetry",
  "opentelemetry-otlp",
+ "opentelemetry-semantic-conventions",
  "pretty_assertions",
  "rstest",
  "schemars",
@@ -1241,6 +1242,15 @@ dependencies = [
  "opentelemetry",
  "prost",
  "tonic",
+]
+
+[[package]]
+name = "opentelemetry-semantic-conventions"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "24e33428e6bf08c6f7fcea4ddb8e358fab0fe48ab877a87c70c6ebe20f673ce5"
+dependencies = [
+ "opentelemetry",
 ]
 
 [[package]]
