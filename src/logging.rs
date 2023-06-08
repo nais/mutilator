@@ -44,7 +44,7 @@ pub fn init_logging(config: &Config) -> Result<()> {
     Ok(())
 }
 
-fn init_otel<'a>() -> Result<(OpenTelemetryLayer<Registry, Tracer>, String)> {
+fn init_otel() -> Result<(OpenTelemetryLayer<Registry, Tracer>, String)> {
     let mut otlp_exporter = opentelemetry_otlp::new_exporter()
         .tonic()
         .with_env();
