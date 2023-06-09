@@ -67,7 +67,7 @@ async fn mutate_handler(State(config): State<Arc<AppConfig>>, Json(admission_rev
 
     let uid = req.uid.clone();
     let mut res = AdmissionResponse::from(&req);
-    let req_span = info_span!("request", uid);
+    let req_span = info_span!("request", request_uid = uid);
     let _req_guard = req_span.enter();
 
     if req.operation != Operation::Create {
@@ -78,7 +78,7 @@ async fn mutate_handler(State(config): State<Arc<AppConfig>>, Json(admission_rev
     if let Some(obj) = &req.object {
         let name = obj.name_any();
         let namespace = obj.namespace().unwrap();
-        let redis_span = info_span!("redis", name, namespace);
+        let redis_span = info_span!("redis", resource_name = name, resource_namespace = namespace);
         let _redis_guard = redis_span.enter();
         info!("Processing redis resource");
         res = match mutate(res.clone(), &obj, &config) {
