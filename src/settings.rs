@@ -80,7 +80,7 @@ pub struct AppConfig {
     #[setting(nested)]
     pub tenant: Tenant,
     // Aiven VPC ID
-    #[setting]
+    #[setting(validate = schematic::validate::regex("^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}"))]
     pub project_vpc_id: String,
     // Cloud location (eq. europe-north1)
     #[setting(default = "europe-north1", parse_env = schematic::env::ignore_empty)]
@@ -105,7 +105,7 @@ mod tests {
     const BIND_ADDRESS_KEY: &'static str = "MUTILATOR__WEB__BIND_ADDRESS";
     const LOCATION: &'static str = "my-location";
     const LOCATION_KEY: &'static str = "MUTILATOR__LOCATION";
-    const PROJECT_VPC_ID: &'static str = "my-vpc-id";
+    const PROJECT_VPC_ID: &'static str = "ba5eba11-dead-bea7-babe-decea5edbabe";
     const PROJECT_VPC_ID_KEY: &'static str = "MUTILATOR__PROJECT_VPC_ID";
 
     #[rstest]
@@ -115,6 +115,7 @@ mod tests {
     #[case::project_vpc_id(PROJECT_VPC_ID_KEY, PROJECT_VPC_ID, PROJECT_VPC_ID)]
     pub fn test_load_config(#[case] key: &str, #[case] expected: &str, #[case] value: &str) {
         let _lock = lock_test();
+        let _vpc_guard = set_env(OsString::from(PROJECT_VPC_ID_KEY), PROJECT_VPC_ID);
         let _guard = set_env(OsString::from(key), value);
 
         let config = load_config().unwrap();
@@ -127,5 +128,13 @@ mod tests {
                 panic!("Unmatched configuration key in test")
             }
         }
+    }
+
+    #[rstest]
+    #[should_panic]
+    pub fn test_required_fields() {
+        let _lock = lock_test();
+
+        let _config = load_config().unwrap();
     }
 }
