@@ -14,44 +14,33 @@ use tracing_subscriber::{filter, Registry};
 use crate::settings::{AppConfig, LogFormat};
 
 pub fn init_logging(config: &AppConfig) -> Result<()> {
-	let filter = filter::Targets::new()
-		.with_default(&config.log_level)
-		.with_target("axum::rejection", Level::TRACE);
-	if config.otel_enabled {
-		let (otel_layer, otel_log_msg) = init_otel()?;
-		match config.log_format {
-			LogFormat::Plain => {
-				let fmt_layer = tracing_subscriber::fmt::layer().compact();
-				Registry::default()
-					.with(otel_layer)
-					.with(fmt_layer)
-					.with(filter)
-					.init();
-			},
-			LogFormat::Json => {
-				let fmt_layer = tracing_subscriber::fmt::layer().json().flatten_event(true);
-				Registry::default()
-					.with(otel_layer)
-					.with(fmt_layer)
-					.with(filter)
-					.init();
-			},
-		};
-		info!("{:?} logger initialized", config.log_format);
-		info!("{}", otel_log_msg);
-	} else {
-		match config.log_format {
-			LogFormat::Plain => {
-				let fmt_layer = tracing_subscriber::fmt::layer().compact();
-				Registry::default().with(fmt_layer).with(filter).init();
-			},
-			LogFormat::Json => {
-				let fmt_layer = tracing_subscriber::fmt::layer().json().flatten_event(true);
-				Registry::default().with(fmt_layer).with(filter).init();
-			},
-		};
-		info!("{:?} logger initialized", config.log_format);
-	}
+	let otel_layer = match config.otel_enabled {
+		false => None,
+		true => {
+			let (layer, otel_log_msg) = init_otel()?;
+			info!("{}", otel_log_msg);
+			Some(layer)
+		},
+	};
+
+	use tracing_subscriber::fmt as layer_fmt;
+	let (plain_log_format, json_log_format) = match config.log_format {
+		LogFormat::Plain => (Some(layer_fmt::layer().compact()), None),
+		LogFormat::Json => (None, Some(layer_fmt::layer().json().flatten_event(true))),
+	};
+
+	tracing_subscriber::Registry::default()
+		.with(otel_layer)
+		.with(plain_log_format)
+		.with(json_log_format)
+		.with(
+			filter::Targets::new()
+				.with_default(&config.log_level)
+				.with_target("axum::rejection", Level::TRACE),
+		)
+		.init();
+	info!("{:?} logger initialized", config.log_format);
+
 	Ok(())
 }
 
