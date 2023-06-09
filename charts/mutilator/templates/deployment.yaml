@@ -47,7 +47,7 @@ spec:
             - name: MUTILATOR__WEB__PRIVATE_KEY_PATH
               value: /var/run/certificates/tls.key
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://tempo-distributor.nais-system:4317
+              value: {{ .Values.otlp_endpoint }}
             - name: NAIS_APP_NAME
               value: {{ include "mutilator.fullname" . }}
             - name: NAIS_NAMESPACE

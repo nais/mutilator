@@ -9,7 +9,7 @@ cluster_name: "" # Mapped in fasit
 tenant:
   name: "" # Mapped in fasit
   environment: "" # Mapped in fasit
-
+otlp_endpoint: ""
 
 replicaCount: 2
 
