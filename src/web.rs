@@ -159,6 +159,7 @@ mod tests {
             },
             project_vpc_id: "test-vpc-id".to_string(),
             location: "test-location".to_string(),
+            otel_enabled: false,
         });
         let router = create_router(state);
         TestServer::new(router.into_make_service()).unwrap()

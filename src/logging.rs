@@ -17,30 +17,53 @@ pub fn init_logging(config: &AppConfig) -> Result<()> {
     let filter = filter::Targets::new()
         .with_default(&config.log_level)
         .with_target("axum::rejection", Level::TRACE);
-    let (otel_layer, otel_log_msg) = init_otel()?;
-    match config.log_format {
-        LogFormat::Plain => {
-            let fmt_layer = tracing_subscriber::fmt::layer()
-                .compact();
-            Registry::default()
-                .with(otel_layer)
-                .with(fmt_layer)
-                .with(filter)
-                .init();
-        }
-        LogFormat::Json => {
-            let fmt_layer = tracing_subscriber::fmt::layer()
-                .json()
-                .flatten_event(true);
-            Registry::default()
-                .with(otel_layer)
-                .with(fmt_layer)
-                .with(filter)
-                .init();
-        }
-    };
-    info!("{:?} logger initialized", config.log_format);
-    info!("{}", otel_log_msg);
+    if config.otel_enabled {
+        let (otel_layer, otel_log_msg) = init_otel()?;
+        match config.log_format {
+            LogFormat::Plain => {
+                let fmt_layer = tracing_subscriber::fmt::layer()
+                    .compact();
+                Registry::default()
+                    .with(otel_layer)
+                    .with(fmt_layer)
+                    .with(filter)
+                    .init();
+            }
+            LogFormat::Json => {
+                let fmt_layer = tracing_subscriber::fmt::layer()
+                    .json()
+                    .flatten_event(true);
+                Registry::default()
+                    .with(otel_layer)
+                    .with(fmt_layer)
+                    .with(filter)
+                    .init();
+            }
+        };
+        info!("{:?} logger initialized", config.log_format);
+        info!("{}", otel_log_msg);
+    } else {
+        match config.log_format {
+            LogFormat::Plain => {
+                let fmt_layer = tracing_subscriber::fmt::layer()
+                    .compact();
+                Registry::default()
+                    .with(fmt_layer)
+                    .with(filter)
+                    .init();
+            }
+            LogFormat::Json => {
+                let fmt_layer = tracing_subscriber::fmt::layer()
+                    .json()
+                    .flatten_event(true);
+                Registry::default()
+                    .with(fmt_layer)
+                    .with(filter)
+                    .init();
+            }
+        };
+        info!("{:?} logger initialized", config.log_format);
+    }
     Ok(())
 }
 

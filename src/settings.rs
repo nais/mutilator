@@ -85,6 +85,19 @@ pub struct AppConfig {
     // Cloud location (eq. europe-north1)
     #[setting(default = "europe-north1", parse_env = schematic::env::ignore_empty)]
     pub location: String,
+    // Enabled OpenTelemetry collector
+    #[setting(default = false, env = "OTEL_EXPORTER_OTLP_ENDPOINT", parse_env = parse_otel)]
+    pub otel_enabled: bool,
+}
+
+pub fn parse_otel(var: String) -> Result<Option<bool>, schematic::ConfigError> {
+    let var = var.trim();
+
+    if var.starts_with("https://") || var.starts_with("http://") {
+        Ok(Some(true))
+    } else {
+        Ok(None)
+    }
 }
 
 pub fn load_config() -> anyhow::Result<AppConfig> {
@@ -136,5 +149,18 @@ mod tests {
         let _lock = lock_test();
 
         let _config = load_config().unwrap();
+    }
+
+    #[rstest]
+    #[case::enabled("https://localhost:4317", true)]
+    #[case::disabled("", false)]
+    pub fn test_otel_setting(#[case] value: &str, #[case] expected: bool) {
+        let _lock = lock_test();
+        let _vpc_guard = set_env(OsString::from(PROJECT_VPC_ID_KEY), PROJECT_VPC_ID);
+        let _guard = set_env(OsString::from(opentelemetry_otlp::OTEL_EXPORTER_OTLP_ENDPOINT), value);
+
+        let config = load_config().unwrap();
+
+        assert_eq!(config.otel_enabled, expected)
     }
 }

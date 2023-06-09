@@ -135,6 +135,7 @@ mod tests {
             },
             project_vpc_id: PROJECT_VPC_ID.to_string(),
             location: LOCATION.to_string(),
+            otel_enabled: false,
         })
     }
 
