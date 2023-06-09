@@ -1,35 +1,13 @@
 use serde::{Deserialize, Serialize};
 use atty::Stream;
 use std::path::PathBuf;
-use figment::Figment;
-use figment::providers::{Env, Format, Yaml};
+use schematic::{Config, ConfigEnum, ConfigLoader};
 use tracing::level_filters::LevelFilter;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(ConfigEnum, Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
 pub enum LogFormat {
     Plain,
     Json,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-pub enum LogLevel {
-    Trace = 0,
-    Debug = 1,
-    Info = 2,
-    Warn = 3,
-    Error = 4,
-}
-
-impl Into<LevelFilter> for &LogLevel {
-    fn into(self) -> LevelFilter {
-        match self {
-            LogLevel::Trace => LevelFilter::TRACE,
-            LogLevel::Debug => LevelFilter::DEBUG,
-            LogLevel::Info => LevelFilter::INFO,
-            LogLevel::Warn => LevelFilter::WARN,
-            LogLevel::Error => LevelFilter::ERROR,
-        }
-    }
 }
 
 impl Default for LogFormat {
@@ -41,9 +19,33 @@ impl Default for LogFormat {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(ConfigEnum, Debug, Default, Deserialize, Serialize, Clone, PartialEq, Eq)]
+pub enum LogLevel {
+    Trace = 0,
+    Debug = 1,
+    #[default]
+    Info = 2,
+    Warn = 3,
+    Error_ = 4,
+}
+
+impl Into<LevelFilter> for &LogLevel {
+    fn into(self) -> LevelFilter {
+        match self {
+            LogLevel::Trace => LevelFilter::TRACE,
+            LogLevel::Debug => LevelFilter::DEBUG,
+            LogLevel::Info => LevelFilter::INFO,
+            LogLevel::Warn => LevelFilter::WARN,
+            LogLevel::Error_ => LevelFilter::ERROR,
+        }
+    }
+}
+
+#[derive(Config, Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
+#[config(env_prefix = "MUTILATOR__WEB__")]
 pub struct WebConfig {
     // The address:port to bind to
+    #[setting(default = "0.0.0.0:9443", parse_env = schematic::env::ignore_empty)]
     pub bind_address: String,
     // Path to certificate for TLS
     pub certificate_path: Option<PathBuf>,
@@ -51,43 +53,43 @@ pub struct WebConfig {
     pub private_key_path: Option<PathBuf>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Config, Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
+#[config(env_prefix = "MUTILATOR__TENANT__")]
 pub struct Tenant {
+    #[setting(default = "local", parse_env = schematic::env::ignore_empty)]
     pub environment: String,
+    #[setting(default = "local", parse_env = schematic::env::ignore_empty)]
     pub name: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct Config {
+#[derive(Config, Debug, Deserialize, Serialize, Clone)]
+#[config(env_prefix = "MUTILATOR__")]
+pub struct AppConfig {
     // Logging format to use
     #[serde(default)]
+    #[setting]
     pub log_format: LogFormat,
     // Log level
+    #[serde(default)]
+    #[setting]
     pub log_level: LogLevel,
     // Configure web server
+    #[setting(nested)]
     pub web: WebConfig,
     // Tenant details
+    #[setting(nested)]
     pub tenant: Tenant,
     // Aiven VPC ID
+    #[setting]
     pub project_vpc_id: String,
     // Cloud location (eq. europe-north1)
+    #[setting(default = "europe-north1", parse_env = schematic::env::ignore_empty)]
     pub location: String,
 }
 
-pub fn load_config() -> anyhow::Result<Config, figment::Error> {
-    let defaults = "\
-log_level: Info
-web:
-    bind_address: 0.0.0.0:9443
-tenant:
-    environment: local
-    name: local
-location: europe-north1
-    ";
-    Figment::new()
-        .merge(Yaml::string(defaults))
-        .merge(Env::prefixed("MUTILATOR__").split("__"))
-        .extract()
+pub fn load_config() -> anyhow::Result<AppConfig> {
+    let config_load_result = ConfigLoader::<AppConfig>::new().load()?;
+    Ok(config_load_result.config)
 }
 
 #[cfg(test)]
@@ -99,21 +101,21 @@ mod tests {
     use rstest::*;
     use super::*;
 
+    const BIND_ADDRESS: &'static str = "127.0.0.1:9443";
+    const BIND_ADDRESS_KEY: &'static str = "MUTILATOR__WEB__BIND_ADDRESS";
     const LOCATION: &'static str = "my-location";
     const LOCATION_KEY: &'static str = "MUTILATOR__LOCATION";
     const PROJECT_VPC_ID: &'static str = "my-vpc-id";
     const PROJECT_VPC_ID_KEY: &'static str = "MUTILATOR__PROJECT_VPC_ID";
-    const BIND_ADDRESS: &'static str = "127.0.0.1:9443";
-    const BIND_ADDRESS_KEY: &'static str = "MUTILATOR__WEB__BIND_ADDRESS";
 
     #[rstest]
-    #[case(LOCATION_KEY, LOCATION, LOCATION)]
-    #[case(LOCATION_KEY, "europe-north1", "")]
-    #[case(PROJECT_VPC_ID_KEY, PROJECT_VPC_ID, PROJECT_VPC_ID)]
-    #[case(BIND_ADDRESS_KEY, BIND_ADDRESS, BIND_ADDRESS)]
+    #[case::bind_address(BIND_ADDRESS_KEY, BIND_ADDRESS, BIND_ADDRESS)]
+    #[case::location_set(LOCATION_KEY, LOCATION, LOCATION)]
+    #[case::location_blank(LOCATION_KEY, "europe-north1", "")]
+    #[case::project_vpc_id(PROJECT_VPC_ID_KEY, PROJECT_VPC_ID, PROJECT_VPC_ID)]
     pub fn test_load_config(#[case] key: &str, #[case] expected: &str, #[case] value: &str) {
         let _lock = lock_test();
-        let _g1 = set_env(OsString::from(key), value);
+        let _guard = set_env(OsString::from(key), value);
 
         let config = load_config().unwrap();
 

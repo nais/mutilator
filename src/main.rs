@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Result};
 use tracing::info;
 
-use settings::Config;
+use settings::AppConfig;
 
 mod logging;
 mod web;
@@ -16,7 +16,7 @@ fn main() -> Result<()> {
 }
 
 #[tokio::main]
-async fn app(config: Config) -> Result<()> {
+async fn app(config: AppConfig) -> Result<()> {
     logging::init_logging(&config)?;
     info!("Configuration loaded: {:?}", config);
 

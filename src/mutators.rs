@@ -7,7 +7,7 @@ use serde_json::{json, Value};
 use tracing::{debug, info, instrument};
 
 use crate::aiven_types::aiven_redis::Redis;
-use crate::settings::Config;
+use crate::settings::AppConfig;
 
 #[instrument(skip_all)]
 pub fn add_location(location: String, obj: &Redis, patches: &mut Vec<PatchOperation>) {
@@ -22,7 +22,7 @@ pub fn add_location(location: String, obj: &Redis, patches: &mut Vec<PatchOperat
 }
 
 #[instrument(skip_all)]
-pub fn add_tags(config: &Arc<Config>, obj: &Redis, patches: &mut Vec<PatchOperation>) {
+pub fn add_tags(config: &Arc<AppConfig>, obj: &Redis, patches: &mut Vec<PatchOperation>) {
     let environment = config.tenant.environment.clone();
     let tenant = config.tenant.name.clone();
     let team = obj.meta().namespace.as_ref().unwrap().clone();
@@ -120,8 +120,8 @@ mod tests {
     ];
 
     #[fixture]
-    pub fn config() -> Arc<Config> {
-        Arc::new(Config {
+    pub fn config() -> Arc<AppConfig> {
+        Arc::new(AppConfig {
             log_format: Default::default(),
             log_level: LogLevel::Trace,
             web: WebConfig {
@@ -139,7 +139,7 @@ mod tests {
     }
 
     #[rstest]
-    fn add_tags_when_no_tags_before(config: Arc<Config>) {
+    fn add_tags_when_no_tags_before(config: Arc<AppConfig>) {
         let redis = create_redis(None);
         let mut patches = Vec::new();
 
@@ -163,7 +163,7 @@ mod tests {
     }
 
     #[rstest]
-    fn add_tags_when_other_tags_exists(config: Arc<Config>) {
+    fn add_tags_when_other_tags_exists(config: Arc<AppConfig>) {
         let redis = create_redis(Some(BTreeMap::from([
             ("cool".to_string(), "tag".to_string()),
         ])));
@@ -180,7 +180,7 @@ mod tests {
     }
 
     #[rstest]
-    fn replace_tags_when_wrong_values_are_set(config: Arc<Config>) {
+    fn replace_tags_when_wrong_values_are_set(config: Arc<AppConfig>) {
         let mut existing_tags = BTreeMap::new();
         for (key, _value) in TAG_PAIRS {
             existing_tags.insert(key.to_string(), "invalid".to_string());
@@ -205,7 +205,7 @@ mod tests {
     #[case(TENANT, ENVIRONMENT)]
     #[case(NAMESPACE, ENVIRONMENT)]
     #[case(NAMESPACE, TENANT)]
-    fn add_or_replace_as_needed(config: Arc<Config>, #[case] correct: &str, #[case] invalid: &str) {
+    fn add_or_replace_as_needed(config: Arc<AppConfig>, #[case] correct: &str, #[case] invalid: &str) {
         let mut existing_tags = BTreeMap::new();
         for (key, value) in TAG_PAIRS {
             match value {

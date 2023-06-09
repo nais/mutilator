@@ -11,9 +11,9 @@ use tracing_subscriber::{filter, Registry};
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::prelude::*;
 
-use crate::settings::{Config, LogFormat};
+use crate::settings::{AppConfig, LogFormat};
 
-pub fn init_logging(config: &Config) -> Result<()> {
+pub fn init_logging(config: &AppConfig) -> Result<()> {
     let filter = filter::Targets::new()
         .with_default(&config.log_level)
         .with_target("axum::rejection", Level::TRACE);

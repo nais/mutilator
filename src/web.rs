@@ -14,10 +14,10 @@ use tracing::{debug, error, info, info_span, instrument, warn};
 
 use crate::mutators;
 use crate::aiven_types::aiven_redis::Redis;
-use crate::settings::Config;
+use crate::settings::AppConfig;
 
 #[instrument(skip_all)]
-pub async fn start_web_server(config: Config) -> Result<()> {
+pub async fn start_web_server(config: AppConfig) -> Result<()> {
     let certificate_path = config.web.certificate_path.clone();
     let private_key_path = config.web.private_key_path.clone();
     let addr = config.web.bind_address.parse().unwrap();
@@ -44,7 +44,7 @@ pub async fn start_web_server(config: Config) -> Result<()> {
     Ok(())
 }
 
-fn create_router(state: Arc<Config>) -> Router {
+fn create_router(state: Arc<AppConfig>) -> Router {
     let router = Router::new()
         .route("/is_alive", get(|| async { "I'm alive!" }))
         .route("/is_ready", get(|| async { "Ready for action!" }))
@@ -56,7 +56,7 @@ fn create_router(state: Arc<Config>) -> Router {
 
 #[debug_handler]
 #[instrument(skip_all)]
-async fn mutate_handler(State(config): State<Arc<Config>>, Json(admission_review): Json<AdmissionReview<Redis>>) -> (StatusCode, Json<AdmissionReview<DynamicObject>>) {
+async fn mutate_handler(State(config): State<Arc<AppConfig>>, Json(admission_review): Json<AdmissionReview<Redis>>) -> (StatusCode, Json<AdmissionReview<DynamicObject>>) {
     let req: AdmissionRequest<Redis> = match admission_review.try_into() {
         Ok(req) => req,
         Err(err) => {
@@ -99,7 +99,7 @@ async fn mutate_handler(State(config): State<Arc<Config>>, Json(admission_review
 }
 
 #[instrument(skip_all)]
-fn mutate(res: AdmissionResponse, obj: &Redis, config: &Arc<Config>) -> Result<AdmissionResponse> {
+fn mutate(res: AdmissionResponse, obj: &Redis, config: &Arc<AppConfig>) -> Result<AdmissionResponse> {
     let mut patches = Vec::new();
 
     mutators::add_project_vpc_id(config.project_vpc_id.clone(), obj, &mut patches);
@@ -128,7 +128,7 @@ mod tests {
 
     use serde_yaml;
 
-    use crate::settings::{Config, LogLevel, Tenant, WebConfig};
+    use crate::settings::{AppConfig, LogLevel, Tenant, WebConfig};
     use crate::web::create_router;
 
     #[derive(Serialize,Deserialize,Debug)]
@@ -145,7 +145,7 @@ mod tests {
 
     #[fixture]
     pub fn test_server() -> TestServer {
-        let state = Arc::new(Config {
+        let state = Arc::new(AppConfig {
             log_format: Default::default(),
             log_level: LogLevel::Trace,
             web: WebConfig {
