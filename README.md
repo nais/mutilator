@@ -10,14 +10,19 @@ Things to mutate
 - [X] cloudName: google-{{ .Values.location }}
 - [X] tags: (environment, tenant, team)
 
-## Building 
+## Building Docker image w/Earthly
 
-Mutilator uses [earthly](https://earthly.dev) for building. 
+Mutilator can use [earthly](https://earthly.dev) for building.
 If you don't have earthly installed, you can use the wrapper at `./earthlyw`, which downloads the latest version for you.
 
 * `earthly ls` to list targets
 * `earthly +docker` to build primary target
 * `earthly +aiven-types` to generate rust models for Aiven CRDs (see below)
+
+## Building Docker Image w/Nix
+1. Use `earthly +aiven-types` to generate rust models
+1. Use `nix build .#docker` to build docker image
+1. Load docker image into Docker Daemon w/`docker load < result`
 
 ## Adding new types
 

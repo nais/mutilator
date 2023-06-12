@@ -22,3 +22,10 @@ Temporary Items
 .Trashes
 .VolumeIcon.icns
 certs/
+
+# Nix stuff
+.direnv/
+result
+
+# General common/personal env files
+.env*
