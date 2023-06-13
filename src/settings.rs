@@ -1,7 +1,6 @@
-use atty::Stream;
 use schematic::{Config, ConfigEnum, ConfigLoader};
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
+use std::{io::IsTerminal, path::PathBuf};
 use tracing::level_filters::LevelFilter;
 
 #[derive(ConfigEnum, Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
@@ -12,7 +11,7 @@ pub enum LogFormat {
 
 impl Default for LogFormat {
 	fn default() -> Self {
-		match atty::is(Stream::Stdout) {
+		match std::io::stdout().is_terminal() {
 			true => LogFormat::Plain,
 			false => LogFormat::Json,
 		}
