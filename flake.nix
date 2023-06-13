@@ -93,8 +93,8 @@
           pname = binary-name;
         });
       dockerTag =
-        if nixpkgs.lib.hasAttr "revision" self
-        then "${self.revCount}-${self.shortRev}"
+        if nixpkgs.lib.hasAttr "rev" self
+        then "${builtins.toString self.revCount}-${self.shortRev}"
         else "gitDirty";
     in {
       checks = {
