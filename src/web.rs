@@ -189,8 +189,17 @@ mod tests {
 	}
 
 	fn test_data(path: PathBuf, file_name: &str) -> TestData {
-		let reader = BufReader::new(File::open(path.join(file_name)).unwrap());
-		serde_yaml::from_reader(reader).unwrap()
+		let file_path = path.join(file_name);
+		let reader = BufReader::new(File::open(file_path.clone()).unwrap_or_else(|err| {
+			panic!("Unable to read '{}', error: {}", file_path.display(), err)
+		}));
+		serde_yaml::from_reader(reader).unwrap_or_else(|err| {
+			panic!(
+				"Unable to deserialize '{}', error: {}",
+				file_path.display(),
+				err
+			)
+		})
 	}
 
 	#[rstest]
