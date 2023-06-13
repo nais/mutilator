@@ -85,7 +85,7 @@
         });
 
       # Compile and cache only workspace code (seperately from 3rc party dependencies)
-      package-file-filter = dep-files-filter ++ [".*\.rs"];
+      package-file-filter = dep-files-filter ++ ["src/.+\.rs" "src/test_data/.+\.yaml"];
       cargo-package = craneLib.buildPackage (commonArgs
         // {
           inherit cargo-deps;
