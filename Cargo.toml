@@ -16,7 +16,7 @@ log = { version = "0.4.19", features = ["kv_unstable", "serde", "kv_unstable_ser
 schemars = { version = "0.8.12", features = ["derive_json_schema"] }
 serde = { version = "1.0.164", features = ["serde_derive", "derive"] }
 serde_json = "1.0.97"
-tokio = { version = "1.28.2", features = ["full"] }
+tokio = { version = "1.29.0", features = ["full"] }
 tracing = "0.1.37"
 tracing-subscriber = { version = "0.3.17", features = ["fmt", "json"] }
 tracing-opentelemetry = "0.19.0"
