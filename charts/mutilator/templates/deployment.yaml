@@ -4,6 +4,9 @@ metadata:
   name: {{ include "mutilator.fullname" . }}
   labels:
     {{- include "mutilator.labels" . | nindent 4 }}
+  annotations:
+    # trigger deployment rollout on certificate secret changes
+    "secret.reloader.stakater.com/reload": {{ include "mutilator.fullname" . }}-certs
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
