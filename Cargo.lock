@@ -341,12 +341,12 @@ dependencies = [
 
 [[package]]
 name = "darling"
-version = "0.20.1"
+version = "0.20.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0558d22a7b463ed0241e993f76f09f30b126687447751a8638587b864e4b3944"
+checksum = "0209d94da627ab5605dcccf08bb18afa5009cfbef48d8a8b7d7bdbc79be25c5e"
 dependencies = [
- "darling_core 0.20.1",
- "darling_macro 0.20.1",
+ "darling_core 0.20.3",
+ "darling_macro 0.20.3",
 ]
 
 [[package]]
@@ -365,9 +365,9 @@ dependencies = [
 
 [[package]]
 name = "darling_core"
-version = "0.20.1"
+version = "0.20.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab8bfa2e259f8ee1ce5e97824a3c55ec4404a0d772ca7fa96bf19f0752a046eb"
+checksum = "177e3443818124b357d8e76f53be906d60937f0d3a90773a664fa63fa253e621"
 dependencies = [
  "fnv",
  "ident_case",
@@ -390,11 +390,11 @@ dependencies = [
 
 [[package]]
 name = "darling_macro"
-version = "0.20.1"
+version = "0.20.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "29a358ff9f12ec09c3e61fef9b5a9902623a695a46a917b07f269bff1445611a"
+checksum = "836a9bbc7ad63342d6d6e7b815ccab164bc77a2d95d84bc3117a8c0d5c98e2d5"
 dependencies = [
- "darling_core 0.20.1",
+ "darling_core 0.20.3",
  "quote",
  "syn 2.0.28",
 ]
@@ -618,9 +618,9 @@ dependencies = [
 
 [[package]]
 name = "garde"
-version = "0.11.2"
+version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d959ef7bda0bda7cc0f6fbebfbac6202f810394f50e07059eeea8ec31e69e4b0"
+checksum = "5b9d6ea59620728a8e9fb67bba68dbd88bff7744de0c7149027612334ed6a40b"
 dependencies = [
  "garde_derive",
  "once_cell",
@@ -629,9 +629,9 @@ dependencies = [
 
 [[package]]
 name = "garde_derive"
-version = "0.11.2"
+version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7e89f7fce035bb3a3718e23efff13709a0b21b694c4eae20a32e1a3e4e27c6a2"
+checksum = "5d9df466e06c7de0744e5f14048ba5331d7a4d31e98542046d869e953fc3420f"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1066,9 +1066,9 @@ checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 
 [[package]]
 name = "miette"
-version = "5.9.0"
+version = "5.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a236ff270093b0b67451bc50a509bd1bad302cb1d3c7d37d5efe931238581fa9"
+checksum = "59bb584eaeeab6bd0226ccf3509a69d7936d148cf3d036ad350abe35e8c6856e"
 dependencies = [
  "miette-derive",
  "once_cell",
@@ -1078,9 +1078,9 @@ dependencies = [
 
 [[package]]
 name = "miette-derive"
-version = "5.9.0"
+version = "5.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4901771e1d44ddb37964565c654a3223ba41a594d02b8da471cc4464912b5cfa"
+checksum = "49e7bc1560b95a3c4a25d03de42fe76ca718ab92d1a22a55b9b4cf67b3ae635c"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1433,9 +1433,9 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.63"
+version = "1.0.66"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b368fba921b0dce7e60f5e04ec15e565b3303972b42bcfde1d0713b881959eb"
+checksum = "18fb31db3f9bddb2ea821cde30a9f70117e3f119938b5ee630b7403aa6e2ead9"
 dependencies = [
  "unicode-ident",
 ]
@@ -1465,9 +1465,9 @@ dependencies = [
 
 [[package]]
 name = "quote"
-version = "1.0.28"
+version = "1.0.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1b9ab9c7eadfd8df19006f1cf1a4aed13540ed5cbc047010ece5826e10825488"
+checksum = "50f3b39ccfb720540debaa0164757101c08ecb8d326b15358ce76a62c7e85965"
 dependencies = [
  "proc-macro2",
 ]
@@ -1756,9 +1756,9 @@ dependencies = [
 
 [[package]]
 name = "schematic"
-version = "0.11.0"
+version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e9249e73e7504ef2da20601f82c7ec8943e5428f62a14a28d0c61c2cec2d1182"
+checksum = "47119c16c048894c2003db42c9ec28cd502ba29155a813d46c68ea82f0847ec6"
 dependencies = [
  "garde",
  "indexmap 2.0.0",
@@ -1776,12 +1776,12 @@ dependencies = [
 
 [[package]]
 name = "schematic_macros"
-version = "0.11.0"
+version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "922ef9a16e342cca239e2f55cb1bafe1eb967311fcf5805bccc82aa67aac2259"
+checksum = "d830e5344f49890b62354565ad355f77af511c298eadd70cfd96d7f077820252"
 dependencies = [
  "convert_case",
- "darling 0.20.1",
+ "darling 0.20.3",
  "proc-macro2",
  "quote",
  "syn 2.0.28",
@@ -1789,9 +1789,9 @@ dependencies = [
 
 [[package]]
 name = "schematic_types"
-version = "0.4.0"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5f7038a887c40738c43a72295771a0e04e7dd56c110d060b07898bcf4515661c"
+checksum = "2e76f3ad9eccc2a3f57dc0d27c20f04f8e3911b789f31eb2559c7a3597a10e6c"
 
 [[package]]
 name = "scopeguard"
@@ -1911,10 +1911,11 @@ dependencies = [
 
 [[package]]
 name = "serde_path_to_error"
-version = "0.1.11"
+version = "0.1.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f7f05c1d5476066defcdfacce1f52fc3cae3af1d3089727100c02ae92e5abbe0"
+checksum = "4beec8bce849d58d06238cb50db2e1c417cfeafa4c63f692b15c82b7c80f8335"
 dependencies = [
+ "itoa",
  "serde",
 ]
 
@@ -1994,9 +1995,9 @@ checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
 
 [[package]]
 name = "starbase_styles"
-version = "0.1.11"
+version = "0.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9cf0d8c14a248ab71633cc81525935091d7e456900955e48aba23f250af18baf"
+checksum = "3e5c30719b6118d1946b56a506a164b5d2cee97f10148e86125f94093c727253"
 dependencies = [
  "dirs",
  "owo-colors",
@@ -2117,18 +2118,18 @@ checksum = "2047c6ded9c721764247e62cd3b03c09ffc529b2ba5b10ec482ae507a4a70160"
 
 [[package]]
 name = "thiserror"
-version = "1.0.40"
+version = "1.0.44"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "978c9a314bd8dc99be594bc3c175faaa9794be04a5a5e153caba6915336cebac"
+checksum = "611040a08a0439f8248d1990b111c95baa9c704c805fa1f62104b39655fd7f90"
 dependencies = [
  "thiserror-impl",
 ]
 
 [[package]]
 name = "thiserror-impl"
-version = "1.0.40"
+version = "1.0.44"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f9456a42c5b0d803c8cd86e73dd7cc9edd429499f37a3550d286d5e86720569f"
+checksum = "090198534930841fab3a5d1bb637cde49e339654e606195f8d9c76eeb081dc96"
 dependencies = [
  "proc-macro2",
  "quote",
