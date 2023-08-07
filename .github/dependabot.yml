@@ -10,6 +10,10 @@ updates:
         patterns:
           - opentelemetry*
           - tracing-opentelemetry
+      k8s:
+        patterns:
+          - kube
+          - k8s-openapi
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
