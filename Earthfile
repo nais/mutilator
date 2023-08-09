@@ -47,7 +47,7 @@ aiven-types:
     SAVE ARTIFACT aiven_*.rs AS LOCAL src/aiven_types/
 
 docker:
-    FROM cgr.dev/chainguard/static
+    FROM gcr.io/distroless/static-debian11:nonroot
     # Explicitly build these targets so that the cache images are pushed
     BUILD +prepare
     BUILD +chef-cook
