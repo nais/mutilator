@@ -5,15 +5,16 @@ prepare:
     FROM rust:1
     WORKDIR /code
 
-    ENV CARGO_BUILD_TARGET=x86_64-unknown-linux-musl
-
     RUN apt-get --yes update && apt-get --yes install cmake musl-tools
+
+    ENV CARGO_BUILD_TARGET=x86_64-unknown-linux-musl
     RUN rustup target add "${CARGO_BUILD_TARGET}"
 
-    RUN curl -LsSf https://github.com/cargo-bins/cargo-binstall/releases/latest/download/cargo-binstall-x86_64-unknown-linux-musl.tgz | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
-    RUN curl -LsSf https://github.com/kube-rs/kopium/releases/latest/download/kopium-linux-amd64 > ${CARGO_HOME:-~/.cargo}/bin/kopium && chmod a+x ${CARGO_HOME:-~/.cargo}/bin/kopium
-    RUN curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
-    RUN cargo binstall --no-confirm --no-cleanup cargo-chef
+    RUN curl -LsSf https://github.com/kube-rs/kopium/releases/latest/download/kopium-linux-amd64 > "${CARGO_HOME:-~/.cargo}/bin/kopium" && chmod a+x "${CARGO_HOME:-~/.cargo}/bin/kopium"
+
+    RUN curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+    RUN cargo binstall --secure --no-confirm --no-cleanup cargo-chef cargo-nextest
+
     SAVE IMAGE --push ghcr.io/nais/mutilator/cache:prepare
 
 chef-planner:
