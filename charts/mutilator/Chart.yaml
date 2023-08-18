@@ -1,6 +1,8 @@
 apiVersion: v2
 name: mutilator
-description: A mutating admission controller for Kubernetes
+description: A mutating admission controller for Kubernetes that will enforce certain fields in resources belonging to the Aiven Operator.
+sources:
+  - https://github.com/nais/mutilator/tree/master/charts/mutilator
 
 # A chart can be either an 'application' or a 'library' chart.
 #
@@ -15,4 +17,4 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.3.1
+version: invalid

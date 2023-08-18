@@ -62,7 +62,7 @@ docker:
     # builtins must be declared
     ARG EARTHLY_GIT_SHORT_HASH
 
-    ARG REGISTRY=europe-north1-docker.pkg.dev/nais-io/nais/images
-    ARG image=${REGISTRY}/mutilator
+    ARG REGISTRY=europe-north1-docker.pkg.dev
+    ARG image=${REGISTRY}/nais-io/nais/images/mutilator
     ARG VERSION=$EARTHLY_GIT_SHORT_HASH
     SAVE IMAGE --push ${image}:${VERSION} ${image}:latest

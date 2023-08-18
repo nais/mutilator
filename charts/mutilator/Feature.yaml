@@ -1,0 +1,36 @@
+dependencies:
+  - allOf:
+      - aiven-operator
+environmentKinds:
+  - tenant
+  - legacy
+values:
+  cluster_name:
+    computed:
+      template: '"{{ .Env.name }}"'
+  image.tag:
+    displayName: Image tag
+    config:
+      type: string
+  location:
+    description: Override cloud location. Ex. europe-north1
+    computed:
+      template: '"{{ .Env.location }}"'
+    config:
+      type: string
+  otlp_endpoint:
+    displayName: OpenTelemetry endpoint
+    config:
+      type: string
+  project_vpc_id:
+    description: Override mapped project vpc id. (<aiven project>/<uuid>)
+    computed:
+      template: '"{{ .Env.aiven_project_vpc_id }}"'
+    config:
+      type: string
+  tenant.environment:
+    computed:
+      template: '"{{ if eq .Kind "legacy" }}{{ replace .Env.name "-gcp" "" }}{{ else }}{{ .Env.name }}{{ end }}"'
+  tenant.name:
+    computed:
+      template: '"{{ .Tenant.Name }}"'
