@@ -152,6 +152,7 @@ jobs:
             helm package "$chart"
           done
       - name: Push Chart
+        if: github.ref == 'refs/heads/main'
         run: |-
           for chart in *.tgz; do
             helm push "$chart" oci://${{ env.GOOGLE_REGISTRY }}/nais-io/nais/feature
