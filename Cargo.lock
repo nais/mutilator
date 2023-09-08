@@ -906,6 +906,20 @@ dependencies = [
  "base64",
  "bytes",
  "chrono",
+ "serde",
+ "serde-value",
+ "serde_json",
+]
+
+[[package]]
+name = "k8s-openapi"
+version = "0.20.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "edc3606fd16aca7989db2f84bb25684d0270c6d6fa1dbcd0025af7b4130523a6"
+dependencies = [
+ "base64",
+ "bytes",
+ "chrono",
  "schemars",
  "serde",
  "serde-value",
@@ -918,7 +932,7 @@ version = "0.85.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a189cb8721a47de68d883040713bbb9c956763d784fcf066828018d32c180b96"
 dependencies = [
- "k8s-openapi",
+ "k8s-openapi 0.19.0",
  "kube-client",
  "kube-core",
  "kube-derive",
@@ -932,7 +946,7 @@ checksum = "98989b6e1f27695afe22aa29c94136fa06be5e8d28b91222e6dfbe5a460c803f"
 dependencies = [
  "http",
  "hyper-rustls",
- "k8s-openapi",
+ "k8s-openapi 0.19.0",
  "kube-core",
  "rustls",
  "rustls-pemfile",
@@ -952,7 +966,7 @@ dependencies = [
  "form_urlencoded",
  "http",
  "json-patch",
- "k8s-openapi",
+ "k8s-openapi 0.19.0",
  "once_cell",
  "schemars",
  "serde",
@@ -1082,7 +1096,7 @@ dependencies = [
  "axum-test",
  "envtestkit",
  "json-patch",
- "k8s-openapi",
+ "k8s-openapi 0.20.0",
  "kube",
  "log",
  "opentelemetry",
