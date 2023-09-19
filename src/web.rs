@@ -77,7 +77,7 @@ async fn mutate_handler(
 	let req_span = info_span!("request", request_uid = uid);
 	let _req_guard = req_span.enter();
 
-	if req.operation != Operation::Create {
+	if req.operation == Operation::Delete || req.operation == Operation::Connect {
 		debug!("Ignoring operation {:?}", req.operation);
 		return (StatusCode::OK, Json(res.into_review()));
 	}
