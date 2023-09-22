@@ -1562,7 +1562,6 @@ dependencies = [
  "http",
  "http-body",
  "hyper",
- "hyper-rustls",
  "ipnet",
  "js-sys",
  "log",
@@ -1570,14 +1569,10 @@ dependencies = [
  "once_cell",
  "percent-encoding",
  "pin-project-lite",
- "rustls",
- "rustls-native-certs",
- "rustls-pemfile",
  "serde",
  "serde_json",
  "serde_urlencoded",
  "tokio",
- "tokio-rustls",
  "tower-service",
  "url",
  "wasm-bindgen",
@@ -1749,9 +1744,9 @@ dependencies = [
 
 [[package]]
 name = "schematic"
-version = "0.11.6"
+version = "0.11.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8592df69240651bac26079f142ab7c796ed888f7b5c0c4cddb5efc34149ca79b"
+checksum = "fe561cb5c8380d36ef80bf81a7cc16acfde8a0d130dd3394cc0cb48809d065ab"
 dependencies = [
  "garde",
  "indexmap 2.0.0",
