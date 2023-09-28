@@ -9,7 +9,11 @@ use crate::aiven_types::AivenObject;
 use crate::settings::AppConfig;
 
 #[instrument(skip_all)]
-pub fn add_location(location: String, obj: &dyn AivenObject, patches: &mut Vec<PatchOperation>) {
+pub fn add_location(
+	location: String,
+	obj: &Box<dyn AivenObject>,
+	patches: &mut Vec<PatchOperation>,
+) {
 	let cloud_name = Value::String(format!("google-{}", location));
 	if obj.get_cloud_name().is_none() {
 		info!("Adding cloudName");
@@ -21,7 +25,11 @@ pub fn add_location(location: String, obj: &dyn AivenObject, patches: &mut Vec<P
 }
 
 #[instrument(skip_all)]
-pub fn add_tags(config: &Arc<AppConfig>, obj: &dyn AivenObject, patches: &mut Vec<PatchOperation>) {
+pub fn add_tags(
+	config: &Arc<AppConfig>,
+	obj: &Box<dyn AivenObject>,
+	patches: &mut Vec<PatchOperation>,
+) {
 	let environment = config.tenant.environment.clone();
 	let tenant = config.tenant.name.clone();
 	let team = obj.get_team_name().unwrap();
@@ -72,7 +80,7 @@ fn handle_tag(
 }
 
 #[instrument(skip_all)]
-pub fn add_termination_protection(obj: &dyn AivenObject, patches: &mut Vec<PatchOperation>) {
+pub fn add_termination_protection(obj: &Box<dyn AivenObject>, patches: &mut Vec<PatchOperation>) {
 	if obj.get_termination_protection().is_none() {
 		info!("Enabling terminationProtection");
 		patches.push(add_patch(
@@ -85,7 +93,7 @@ pub fn add_termination_protection(obj: &dyn AivenObject, patches: &mut Vec<Patch
 #[instrument(skip_all)]
 pub fn add_project_vpc_id(
 	project_vpc_id: String,
-	obj: &dyn AivenObject,
+	obj: &Box<dyn AivenObject>,
 	patches: &mut Vec<PatchOperation>,
 ) {
 	if obj.get_project_vpc_id().is_none() {
@@ -279,8 +287,8 @@ mod tests {
 			.collect()
 	}
 
-	fn create_redis(tags: Option<BTreeMap<String, String>>) -> Redis {
-		Redis {
+	fn create_redis(tags: Option<BTreeMap<String, String>>) -> Box<dyn AivenObject> {
+		Box::new(Redis {
 			metadata: ObjectMeta {
 				annotations: None,
 				cluster_name: None,
@@ -316,6 +324,6 @@ mod tests {
 				user_config: None,
 			},
 			status: None,
-		}
+		})
 	}
 }

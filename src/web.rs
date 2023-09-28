@@ -57,19 +57,16 @@ fn create_router(state: Arc<AppConfig>) -> Router {
 #[instrument(skip_all)]
 async fn mutate_handler(
 	State(config): State<Arc<AppConfig>>,
-	Json(admission_review): Json<AdmissionReview<Redis>>,
+	Json(admission_review): Json<AdmissionReview<DynamicObject>>,
 ) -> (StatusCode, Json<AdmissionReview<DynamicObject>>) {
-	let req: AdmissionRequest<Redis> = match admission_review.try_into() {
+	let req: AdmissionRequest<DynamicObject> = match admission_review.try_into() {
 		Ok(req) => req,
 		Err(err) => {
 			warn!(
 				"Unable to get request from AdmissionReview: {}",
 				err.to_string()
 			);
-			return (
-				StatusCode::BAD_REQUEST,
-				Json(AdmissionResponse::invalid("missing request").into_review()),
-			);
+			return bad_request("missing request");
 		},
 	};
 
@@ -88,14 +85,32 @@ async fn mutate_handler(
 	if let Some(obj) = &req.object {
 		let name = obj.name_any();
 		let namespace = obj.namespace().unwrap();
-		let redis_span = info_span!(
-			"redis",
+		let resource_span = info_span!(
+			"resource",
+			resource_kind = req.kind.kind,
 			resource_name = name,
 			resource_namespace = namespace
 		);
-		let _redis_guard = redis_span.enter();
-		info!("Processing redis resource");
-		res = match mutate(res.clone(), obj, &config) {
+		let _resource_guard = resource_span.enter();
+		info!("Processing {} resource", req.kind.kind);
+
+		let resource: Box<dyn AivenObject> = match req.kind.kind.as_str() {
+			"Redis" => {
+				let redis: Redis = match obj.clone().try_parse() {
+					Ok(redis) => redis,
+					Err(err) => {
+						error!("Unable to parse Redis object: {}", err.to_string());
+						return bad_request("unable to parse Redis object");
+					},
+				};
+				Box::new(redis)
+			},
+			_ => {
+				return bad_request("unsupported resource type");
+			},
+		};
+
+		res = match mutate(res.clone(), resource, &config) {
 			Ok(res) => {
 				info!("Processing complete");
 				res
@@ -108,27 +123,31 @@ async fn mutate_handler(
 		(StatusCode::OK, Json(res.into_review()))
 	} else {
 		warn!("No object specified in AdmissionRequest: {:?}", req);
-		(
-			StatusCode::BAD_REQUEST,
-			Json(AdmissionResponse::invalid("no object specified").into_review()),
-		)
+		bad_request("no object specified")
 	}
 }
 
 #[instrument(skip_all)]
 fn mutate(
 	res: AdmissionResponse,
-	obj: &dyn AivenObject,
+	obj: Box<dyn AivenObject>,
 	config: &Arc<AppConfig>,
 ) -> Result<AdmissionResponse> {
 	let mut patches = Vec::new();
 
-	mutators::add_project_vpc_id(config.project_vpc_id.clone(), obj, &mut patches);
-	mutators::add_termination_protection(obj, &mut patches);
-	mutators::add_tags(config, obj, &mut patches);
-	mutators::add_location(config.location.clone(), obj, &mut patches);
+	mutators::add_project_vpc_id(config.project_vpc_id.clone(), &obj, &mut patches);
+	mutators::add_termination_protection(&obj, &mut patches);
+	mutators::add_tags(config, &obj, &mut patches);
+	mutators::add_location(config.location.clone(), &obj, &mut patches);
 
 	Ok(res.with_patch(Patch(patches))?)
+}
+
+fn bad_request(reason: &str) -> (StatusCode, Json<AdmissionReview<DynamicObject>>) {
+	(
+		StatusCode::BAD_REQUEST,
+		Json(AdmissionResponse::invalid(reason).into_review()),
+	)
 }
 
 #[cfg(test)]
@@ -145,7 +164,6 @@ mod tests {
 	use pretty_assertions::assert_eq;
 	use rstest::*;
 	use serde::{Deserialize, Serialize};
-
 	use serde_yaml;
 
 	use crate::settings::{AppConfig, LogLevel, Tenant, WebConfig};
