@@ -13,6 +13,7 @@ use kube::ResourceExt;
 use tracing::{debug, error, info, info_span, instrument, warn};
 
 use crate::aiven_types::aiven_redis::Redis;
+use crate::aiven_types::AivenObject;
 use crate::mutators;
 use crate::settings::AppConfig;
 
@@ -94,7 +95,7 @@ async fn mutate_handler(
 		);
 		let _redis_guard = redis_span.enter();
 		info!("Processing redis resource");
-		res = match mutate(res.clone(), &obj, &config) {
+		res = match mutate(res.clone(), obj, &config) {
 			Ok(res) => {
 				info!("Processing complete");
 				res
@@ -117,7 +118,7 @@ async fn mutate_handler(
 #[instrument(skip_all)]
 fn mutate(
 	res: AdmissionResponse,
-	obj: &Redis,
+	obj: &dyn AivenObject,
 	config: &Arc<AppConfig>,
 ) -> Result<AdmissionResponse> {
 	let mut patches = Vec::new();

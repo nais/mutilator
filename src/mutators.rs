@@ -2,19 +2,18 @@ use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use json_patch::PatchOperation;
-use kube::Resource;
 use serde_json::{json, Value};
 use tracing::{debug, info, instrument};
 
-use crate::aiven_types::aiven_redis::Redis;
+use crate::aiven_types::AivenObject;
 use crate::settings::AppConfig;
 
 #[instrument(skip_all)]
-pub fn add_location(location: String, obj: &Redis, patches: &mut Vec<PatchOperation>) {
+pub fn add_location(location: String, obj: &dyn AivenObject, patches: &mut Vec<PatchOperation>) {
 	let cloud_name = Value::String(format!("google-{}", location));
-	if obj.spec.cloud_name.is_none() {
+	if obj.get_cloud_name().is_none() {
 		info!("Adding cloudName");
-		patches.push(add_patch("/spec/cloudName".into(), cloud_name));
+		patches.push(add_patch(obj.cloud_name_path(), cloud_name));
 	} else {
 		info!("Overwriting cloudName");
 		patches.push(replace_patch("/spec/cloudName".into(), cloud_name));
@@ -22,14 +21,14 @@ pub fn add_location(location: String, obj: &Redis, patches: &mut Vec<PatchOperat
 }
 
 #[instrument(skip_all)]
-pub fn add_tags(config: &Arc<AppConfig>, obj: &Redis, patches: &mut Vec<PatchOperation>) {
+pub fn add_tags(config: &Arc<AppConfig>, obj: &dyn AivenObject, patches: &mut Vec<PatchOperation>) {
 	let environment = config.tenant.environment.clone();
 	let tenant = config.tenant.name.clone();
-	let team = obj.meta().namespace.as_ref().unwrap().clone();
-	if obj.spec.tags.is_none() {
+	let team = obj.get_team_name().unwrap();
+	if obj.get_tags().is_none() {
 		info!("Adding tags");
 		patches.push(add_patch(
-			"/spec/tags".into(),
+			obj.tags_path(),
 			json!({
 				"environment": environment,
 				"tenant": tenant,
@@ -37,13 +36,13 @@ pub fn add_tags(config: &Arc<AppConfig>, obj: &Redis, patches: &mut Vec<PatchOpe
 			}),
 		));
 	} else {
-		let tags = obj.spec.tags.as_ref().unwrap();
+		let tags = obj.get_tags().unwrap();
 		for (tag_name, tag_value) in [
 			("environment", environment.clone()),
 			("tenant", tenant.clone()),
 			("team", team.clone()),
 		] {
-			if let Some(patch) = handle_tag(tags, tag_name, tag_value) {
+			if let Some(patch) = handle_tag(&tags, tag_name, tag_value, obj.tag_path(tag_name)) {
 				patches.push(patch);
 			}
 		}
@@ -54,6 +53,7 @@ fn handle_tag(
 	tags: &BTreeMap<String, String>,
 	tag_name: &str,
 	tag_value: String,
+	tag_path: String,
 ) -> Option<PatchOperation> {
 	match tags.get(tag_name) {
 		Some(value) if value.as_str() == tag_value => {
@@ -62,38 +62,36 @@ fn handle_tag(
 		},
 		Some(value) => {
 			info!("Overwriting {} tag: {} => {}", tag_name, value, tag_value);
-			Some(replace_patch(
-				format!("/spec/tags/{}", tag_name).into(),
-				Value::String(tag_value),
-			))
+			Some(replace_patch(tag_path, Value::String(tag_value)))
 		},
 		None => {
 			info!("Adding {} tag: {}", tag_name, tag_value);
-			Some(add_patch(
-				format!("/spec/tags/{}", tag_name).into(),
-				Value::String(tag_value),
-			))
+			Some(add_patch(tag_path, Value::String(tag_value)))
 		},
 	}
 }
 
 #[instrument(skip_all)]
-pub fn add_termination_protection(obj: &Redis, patches: &mut Vec<PatchOperation>) {
-	if obj.spec.termination_protection.is_none() {
+pub fn add_termination_protection(obj: &dyn AivenObject, patches: &mut Vec<PatchOperation>) {
+	if obj.get_termination_protection().is_none() {
 		info!("Enabling terminationProtection");
 		patches.push(add_patch(
-			"/spec/terminationProtection".into(),
+			obj.termination_protection_path(),
 			Value::Bool(true),
 		));
 	}
 }
 
 #[instrument(skip_all)]
-pub fn add_project_vpc_id(project_vpc_id: String, obj: &Redis, patches: &mut Vec<PatchOperation>) {
-	if obj.spec.project_vpc_id.is_none() {
+pub fn add_project_vpc_id(
+	project_vpc_id: String,
+	obj: &dyn AivenObject,
+	patches: &mut Vec<PatchOperation>,
+) {
+	if obj.get_project_vpc_id().is_none() {
 		info!("Adding projectVpcId");
 		patches.push(add_patch(
-			"/spec/projectVpcId".into(),
+			obj.project_vpc_id_path(),
 			Value::String(project_vpc_id),
 		));
 	}
@@ -109,11 +107,13 @@ fn replace_patch(path: String, value: Value) -> PatchOperation {
 
 #[cfg(test)]
 mod tests {
+	use std::collections::{BTreeMap, BTreeSet};
+
 	use k8s_openapi::apimachinery::pkg::apis::meta::v1::ObjectMeta;
 	use pretty_assertions::assert_eq;
 	use rstest::*;
-	use std::collections::{BTreeMap, BTreeSet};
 
+	use crate::aiven_types::aiven_redis::Redis;
 	use crate::aiven_types::aiven_redis::RedisSpec;
 	use crate::settings::{LogLevel, Tenant, WebConfig};
 
