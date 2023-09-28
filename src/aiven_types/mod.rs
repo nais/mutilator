@@ -1,9 +1,11 @@
 use std::collections::BTreeMap;
 
+use crate::aiven_types::aiven_opensearches::OpenSearch;
 use kube::Resource;
 
 use crate::aiven_types::aiven_redis::Redis;
 
+pub mod aiven_opensearches;
 pub mod aiven_redis;
 
 pub trait AivenObject {
@@ -33,6 +35,28 @@ pub trait AivenObject {
 }
 
 impl AivenObject for Redis {
+	fn get_cloud_name(&self) -> Option<String> {
+		self.spec.cloud_name.clone()
+	}
+
+	fn get_team_name(&self) -> Option<String> {
+		self.meta().namespace.clone()
+	}
+
+	fn get_tags(&self) -> Option<BTreeMap<String, String>> {
+		self.spec.tags.clone()
+	}
+
+	fn get_termination_protection(&self) -> Option<bool> {
+		self.spec.termination_protection.clone()
+	}
+
+	fn get_project_vpc_id(&self) -> Option<String> {
+		self.spec.project_vpc_id.clone()
+	}
+}
+
+impl AivenObject for OpenSearch {
 	fn get_cloud_name(&self) -> Option<String> {
 		self.spec.cloud_name.clone()
 	}

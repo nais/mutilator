@@ -12,6 +12,7 @@ use kube::core::DynamicObject;
 use kube::ResourceExt;
 use tracing::{debug, error, info, info_span, instrument, warn};
 
+use crate::aiven_types::aiven_opensearches::OpenSearch;
 use crate::aiven_types::aiven_redis::Redis;
 use crate::aiven_types::AivenObject;
 use crate::mutators;
@@ -104,6 +105,16 @@ async fn mutate_handler(
 					},
 				};
 				Box::new(redis)
+			},
+			"OpenSearch" => {
+				let open_search: OpenSearch = match obj.clone().try_parse() {
+					Ok(open_search) => open_search,
+					Err(err) => {
+						error!("Unable to parse OpenSearch object: {}", err.to_string());
+						return bad_request("unable to parse OpenSearch object");
+					},
+				};
+				Box::new(open_search)
 			},
 			_ => {
 				return bad_request("unsupported resource type");

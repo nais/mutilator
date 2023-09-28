@@ -42,7 +42,7 @@ build:
 
 aiven-types:
     FROM +prepare
-    RUN for type in redis; do \
+    RUN for type in redis opensearches; do \
             curl -sSL https://raw.githubusercontent.com/aiven/aiven-operator/main/config/crd/bases/aiven.io_${type}.yaml | kopium -Af - > aiven_${type}.rs; \
         done
     SAVE ARTIFACT aiven_*.rs AS LOCAL src/aiven_types/
