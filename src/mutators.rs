@@ -117,12 +117,10 @@ fn replace_patch(path: String, value: Value) -> PatchOperation {
 mod tests {
 	use std::collections::{BTreeMap, BTreeSet};
 
-	use k8s_openapi::apimachinery::pkg::apis::meta::v1::ObjectMeta;
+	use kube::core::DynamicObject;
 	use pretty_assertions::assert_eq;
 	use rstest::*;
 
-	use crate::aiven_types::aiven_redis::Redis;
-	use crate::aiven_types::aiven_redis::RedisSpec;
 	use crate::settings::{LogLevel, Tenant, WebConfig};
 
 	use super::*;
@@ -161,7 +159,7 @@ mod tests {
 
 	#[rstest]
 	fn add_tags_when_no_tags_before(config: Arc<AppConfig>) {
-		let redis = create_redis(None);
+		let redis = create_object(None);
 		let mut patches = Vec::new();
 
 		add_tags(&config, &redis, &mut patches);
@@ -189,7 +187,7 @@ mod tests {
 
 	#[rstest]
 	fn add_tags_when_other_tags_exists(config: Arc<AppConfig>) {
-		let redis = create_redis(Some(BTreeMap::from([(
+		let redis = create_object(Some(BTreeMap::from([(
 			"cool".to_string(),
 			"tag".to_string(),
 		)])));
@@ -211,7 +209,7 @@ mod tests {
 		for (key, _value) in TAG_PAIRS {
 			existing_tags.insert(key.to_string(), "invalid".to_string());
 		}
-		let redis = create_redis(Some(existing_tags));
+		let redis = create_object(Some(existing_tags));
 		let mut patches: Vec<PatchOperation> = Vec::new();
 
 		add_tags(&config, &redis, &mut patches);
@@ -248,7 +246,7 @@ mod tests {
 				_ => {},
 			}
 		}
-		let redis = create_redis(Some(existing_tags));
+		let redis = create_object(Some(existing_tags));
 		let mut patches: Vec<PatchOperation> = Vec::new();
 
 		add_tags(&config, &redis, &mut patches);
@@ -287,43 +285,21 @@ mod tests {
 			.collect()
 	}
 
-	fn create_redis(tags: Option<BTreeMap<String, String>>) -> Box<dyn AivenObject> {
-		Box::new(Redis {
-			metadata: ObjectMeta {
-				annotations: None,
-				cluster_name: None,
-				creation_timestamp: None,
-				deletion_grace_period_seconds: None,
-				deletion_timestamp: None,
-				finalizers: None,
-				generate_name: None,
-				generation: None,
-				labels: None,
-				managed_fields: None,
-				name: Some("test-name".to_string()),
-				namespace: Some("test-namespace".to_string()),
-				owner_references: None,
-				resource_version: None,
-				self_link: None,
-				uid: None,
+	fn create_object(tags: Option<BTreeMap<String, String>>) -> Box<dyn AivenObject> {
+		let object: DynamicObject = serde_json::from_value(json!({
+			"apiVersion": "aiven.io/v1",
+			"kind": "Redis",
+			"metadata": {
+				"name": "test-name",
+				"namespace": "test-namespace"
 			},
-			spec: RedisSpec {
-				auth_secret_ref: None,
-				cloud_name: None,
-				conn_info_secret_target: None,
-				disk_space: None,
-				maintenance_window_dow: None,
-				maintenance_window_time: None,
-				plan: "test-plan".to_string(),
-				project: "test-project".to_string(),
-				project_vpc_ref: None,
-				project_vpc_id: None,
-				service_integrations: None,
-				tags,
-				termination_protection: None,
-				user_config: None,
-			},
-			status: None,
-		})
+			"spec": {
+				"plan": "test-plan",
+				"project": "test-project",
+				"tags": tags
+			}
+		}))
+		.unwrap();
+		Box::new(object)
 	}
 }

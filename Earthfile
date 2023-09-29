@@ -10,8 +10,6 @@ prepare:
     ENV CARGO_BUILD_TARGET=x86_64-unknown-linux-musl
     RUN rustup target add "${CARGO_BUILD_TARGET}"
 
-    RUN curl -LsSf https://github.com/kube-rs/kopium/releases/latest/download/kopium-linux-amd64 > "${CARGO_HOME:-~/.cargo}/bin/kopium" && chmod a+x "${CARGO_HOME:-~/.cargo}/bin/kopium"
-
     RUN curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
     RUN cargo binstall --secure --no-confirm --no-cleanup cargo-chef cargo-nextest
 
@@ -39,13 +37,6 @@ build:
     SAVE ARTIFACT target/${CARGO_BUILD_TARGET}/release/mutilator mutilator
     SAVE ARTIFACT target/nextest/ci/junit.xml AS LOCAL target/nextest/ci/junit.xml
     SAVE IMAGE --push ghcr.io/nais/mutilator/cache:build
-
-aiven-types:
-    FROM +prepare
-    RUN for type in redis opensearches; do \
-            curl -sSL https://raw.githubusercontent.com/aiven/aiven-operator/main/config/crd/bases/aiven.io_${type}.yaml | kopium -Af - > aiven_${type}.rs; \
-        done
-    SAVE ARTIFACT aiven_*.rs AS LOCAL src/aiven_types/
 
 docker:
     FROM gcr.io/distroless/static-debian11:nonroot
