@@ -12,8 +12,6 @@ use kube::core::DynamicObject;
 use kube::ResourceExt;
 use tracing::{debug, error, info, info_span, instrument, warn};
 
-use crate::aiven_types::aiven_opensearches::OpenSearch;
-use crate::aiven_types::aiven_redis::Redis;
 use crate::aiven_types::AivenObject;
 use crate::mutators;
 use crate::settings::AppConfig;
@@ -95,33 +93,7 @@ async fn mutate_handler(
 		let _resource_guard = resource_span.enter();
 		info!("Processing {} resource", req.kind.kind);
 
-		let resource: Box<dyn AivenObject> = match req.kind.kind.as_str() {
-			"Redis" => {
-				let redis: Redis = match obj.clone().try_parse() {
-					Ok(redis) => redis,
-					Err(err) => {
-						error!("Unable to parse Redis object: {}", err.to_string());
-						return bad_request("unable to parse Redis object");
-					},
-				};
-				Box::new(redis)
-			},
-			"OpenSearch" => {
-				let open_search: OpenSearch = match obj.clone().try_parse() {
-					Ok(open_search) => open_search,
-					Err(err) => {
-						error!("Unable to parse OpenSearch object: {}", err.to_string());
-						return bad_request("unable to parse OpenSearch object");
-					},
-				};
-				Box::new(open_search)
-			},
-			_ => {
-				return bad_request("unsupported resource type");
-			},
-		};
-
-		res = match mutate(res.clone(), resource, &config) {
+		res = match mutate(res.clone(), Box::new(obj.to_owned()), &config) {
 			Ok(res) => {
 				info!("Processing complete");
 				res
