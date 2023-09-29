@@ -155,7 +155,6 @@ mod tests {
 	#[derive(Serialize, Deserialize, Debug)]
 	pub struct Asserts {
 		status_code: u16,
-		num_patches: usize,
 		patches: Vec<PatchOperation>,
 	}
 
@@ -208,11 +207,6 @@ mod tests {
 	#[tokio::test]
 	async fn test_mutate(test_server: TestServer, test_dir: PathBuf, #[case] file_name: &str) {
 		let test_data = test_data(test_dir, file_name);
-		assert_eq!(
-			test_data.asserts.num_patches,
-			test_data.asserts.patches.len(),
-			"Number of patches and number of patch operations must match"
-		);
 		let resp = test_server
 			.post("/mutate")
 			.content_type(&"application/json")
@@ -228,12 +222,12 @@ mod tests {
 		println!("{:?}", &admission_result);
 		assert!(admission_response.allowed, "Result should be allowed");
 		let patch = admission_response.patch.as_ref();
-		if test_data.asserts.num_patches > 0 {
+		if test_data.asserts.patches.len() > 0 {
 			assert!(patch.is_some(), "Expected patch, but got none");
 			let patches: Patch = serde_json::from_slice(patch.unwrap().as_slice()).unwrap();
 			assert_eq!(
 				patches.len(),
-				test_data.asserts.num_patches,
+				test_data.asserts.patches.len(),
 				"Unexpected number of patches"
 			);
 			patches.iter().enumerate().for_each(|(i, p)| {

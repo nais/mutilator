@@ -1,6 +1,5 @@
 asserts:
   status_code: 200
-  num_patches: 4
   patches:
     - op: add
       path: /spec/projectVpcId
