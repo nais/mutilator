@@ -141,7 +141,7 @@ mod tests {
 	use std::sync::Arc;
 
 	use axum_test::TestServer;
-	use json_patch::Patch;
+	use json_patch::{Patch, PatchOperation};
 	use kube::core::admission::AdmissionReview;
 	use kube::core::DynamicObject;
 	use pretty_assertions::assert_eq;
@@ -156,6 +156,7 @@ mod tests {
 	pub struct Asserts {
 		status_code: u16,
 		num_patches: usize,
+		patches: Vec<PatchOperation>,
 	}
 
 	#[derive(Serialize, Deserialize, Debug)]
@@ -207,23 +208,39 @@ mod tests {
 	#[tokio::test]
 	async fn test_mutate(test_server: TestServer, test_dir: PathBuf, #[case] file_name: &str) {
 		let test_data = test_data(test_dir, file_name);
+		assert_eq!(
+			test_data.asserts.num_patches,
+			test_data.asserts.patches.len(),
+			"Number of patches and number of patch operations must match"
+		);
 		let resp = test_server
 			.post("/mutate")
 			.content_type(&"application/json")
 			.json(&test_data.admission_review)
 			.await;
-		assert_eq!(resp.status_code(), test_data.asserts.status_code);
+		assert_eq!(
+			resp.status_code(),
+			test_data.asserts.status_code,
+			"Unexpected status code"
+		);
 		let admission_result: AdmissionReview<DynamicObject> = resp.json();
 		let admission_response = admission_result.response.as_ref().unwrap();
 		println!("{:?}", &admission_result);
-		assert!(admission_response.allowed);
+		assert!(admission_response.allowed, "Result should be allowed");
 		let patch = admission_response.patch.as_ref();
 		if test_data.asserts.num_patches > 0 {
-			assert!(patch.is_some());
+			assert!(patch.is_some(), "Expected patch, but got none");
 			let patches: Patch = serde_json::from_slice(patch.unwrap().as_slice()).unwrap();
-			assert_eq!(patches.len(), test_data.asserts.num_patches);
+			assert_eq!(
+				patches.len(),
+				test_data.asserts.num_patches,
+				"Unexpected number of patches"
+			);
+			patches.iter().enumerate().for_each(|(i, p)| {
+				assert_eq!(p, &test_data.asserts.patches[i], "Unexpected patch")
+			});
 		} else {
-			assert!(patch.is_none());
+			assert!(patch.is_none(), "Expected no patch, but got one");
 		}
 	}
 
