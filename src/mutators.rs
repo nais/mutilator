@@ -5,7 +5,7 @@ use json_patch::PatchOperation;
 use serde_json::{json, Value};
 use tracing::{debug, info, instrument};
 
-use crate::aiven_types::AivenObject;
+use crate::aiven_object::AivenObject;
 use crate::settings::AppConfig;
 
 #[instrument(skip_all)]

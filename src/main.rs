@@ -3,7 +3,7 @@ use tracing::info;
 
 use settings::AppConfig;
 
-mod aiven_types;
+mod aiven_object;
 mod logging;
 mod mutators;
 mod settings;

@@ -12,7 +12,7 @@ use kube::core::DynamicObject;
 use kube::ResourceExt;
 use tracing::{debug, error, info, info_span, instrument, warn};
 
-use crate::aiven_types::AivenObject;
+use crate::aiven_object::AivenObject;
 use crate::mutators;
 use crate::settings::AppConfig;
 
