@@ -203,6 +203,7 @@ mod tests {
 
 	#[rstest]
 	#[case("golden_redis.yaml")]
+	#[case("golden_opensearch.yaml")]
 	#[case("redis_with_all_tags.yaml")]
 	#[tokio::test]
 	async fn test_mutate(test_server: TestServer, test_dir: PathBuf, #[case] file_name: &str) {
