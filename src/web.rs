@@ -12,7 +12,7 @@ use kube::core::DynamicObject;
 use kube::ResourceExt;
 use tracing::{debug, error, info, info_span, instrument, warn};
 
-use crate::aiven_types::aiven_redis::Redis;
+use crate::aiven_object::AivenObject;
 use crate::mutators;
 use crate::settings::AppConfig;
 
@@ -56,19 +56,16 @@ fn create_router(state: Arc<AppConfig>) -> Router {
 #[instrument(skip_all)]
 async fn mutate_handler(
 	State(config): State<Arc<AppConfig>>,
-	Json(admission_review): Json<AdmissionReview<Redis>>,
+	Json(admission_review): Json<AdmissionReview<DynamicObject>>,
 ) -> (StatusCode, Json<AdmissionReview<DynamicObject>>) {
-	let req: AdmissionRequest<Redis> = match admission_review.try_into() {
+	let req: AdmissionRequest<DynamicObject> = match admission_review.try_into() {
 		Ok(req) => req,
 		Err(err) => {
 			warn!(
 				"Unable to get request from AdmissionReview: {}",
 				err.to_string()
 			);
-			return (
-				StatusCode::BAD_REQUEST,
-				Json(AdmissionResponse::invalid("missing request").into_review()),
-			);
+			return bad_request("missing request");
 		},
 	};
 
@@ -87,14 +84,16 @@ async fn mutate_handler(
 	if let Some(obj) = &req.object {
 		let name = obj.name_any();
 		let namespace = obj.namespace().unwrap();
-		let redis_span = info_span!(
-			"redis",
+		let resource_span = info_span!(
+			"resource",
+			resource_kind = req.kind.kind,
 			resource_name = name,
 			resource_namespace = namespace
 		);
-		let _redis_guard = redis_span.enter();
-		info!("Processing redis resource");
-		res = match mutate(res.clone(), &obj, &config) {
+		let _resource_guard = resource_span.enter();
+		info!("Processing {} resource", req.kind.kind);
+
+		res = match mutate(res.clone(), Box::new(obj.to_owned()), &config) {
 			Ok(res) => {
 				info!("Processing complete");
 				res
@@ -107,27 +106,31 @@ async fn mutate_handler(
 		(StatusCode::OK, Json(res.into_review()))
 	} else {
 		warn!("No object specified in AdmissionRequest: {:?}", req);
-		(
-			StatusCode::BAD_REQUEST,
-			Json(AdmissionResponse::invalid("no object specified").into_review()),
-		)
+		bad_request("no object specified")
 	}
 }
 
 #[instrument(skip_all)]
 fn mutate(
 	res: AdmissionResponse,
-	obj: &Redis,
+	obj: Box<dyn AivenObject>,
 	config: &Arc<AppConfig>,
 ) -> Result<AdmissionResponse> {
 	let mut patches = Vec::new();
 
-	mutators::add_project_vpc_id(config.project_vpc_id.clone(), obj, &mut patches);
-	mutators::add_termination_protection(obj, &mut patches);
-	mutators::add_tags(config, obj, &mut patches);
-	mutators::add_location(config.location.clone(), obj, &mut patches);
+	mutators::add_project_vpc_id(config.project_vpc_id.clone(), &obj, &mut patches);
+	mutators::add_termination_protection(&obj, &mut patches);
+	mutators::add_tags(config, &obj, &mut patches);
+	mutators::add_location(config.location.clone(), &obj, &mut patches);
 
 	Ok(res.with_patch(Patch(patches))?)
+}
+
+fn bad_request(reason: &str) -> (StatusCode, Json<AdmissionReview<DynamicObject>>) {
+	(
+		StatusCode::BAD_REQUEST,
+		Json(AdmissionResponse::invalid(reason).into_review()),
+	)
 }
 
 #[cfg(test)]
@@ -138,13 +141,12 @@ mod tests {
 	use std::sync::Arc;
 
 	use axum_test::TestServer;
-	use json_patch::Patch;
+	use json_patch::{Patch, PatchOperation};
 	use kube::core::admission::AdmissionReview;
 	use kube::core::DynamicObject;
 	use pretty_assertions::assert_eq;
 	use rstest::*;
 	use serde::{Deserialize, Serialize};
-
 	use serde_yaml;
 
 	use crate::settings::{AppConfig, LogLevel, Tenant, WebConfig};
@@ -153,7 +155,7 @@ mod tests {
 	#[derive(Serialize, Deserialize, Debug)]
 	pub struct Asserts {
 		status_code: u16,
-		num_patches: usize,
+		patches: Vec<PatchOperation>,
 	}
 
 	#[derive(Serialize, Deserialize, Debug)]
@@ -201,6 +203,7 @@ mod tests {
 
 	#[rstest]
 	#[case("golden_redis.yaml")]
+	#[case("golden_opensearch.yaml")]
 	#[case("redis_with_all_tags.yaml")]
 	#[tokio::test]
 	async fn test_mutate(test_server: TestServer, test_dir: PathBuf, #[case] file_name: &str) {
@@ -210,18 +213,29 @@ mod tests {
 			.content_type(&"application/json")
 			.json(&test_data.admission_review)
 			.await;
-		assert_eq!(resp.status_code(), test_data.asserts.status_code);
+		assert_eq!(
+			resp.status_code(),
+			test_data.asserts.status_code,
+			"Unexpected status code"
+		);
 		let admission_result: AdmissionReview<DynamicObject> = resp.json();
 		let admission_response = admission_result.response.as_ref().unwrap();
 		println!("{:?}", &admission_result);
-		assert!(admission_response.allowed);
+		assert!(admission_response.allowed, "Result should be allowed");
 		let patch = admission_response.patch.as_ref();
-		if test_data.asserts.num_patches > 0 {
-			assert!(patch.is_some());
+		if test_data.asserts.patches.len() > 0 {
+			assert!(patch.is_some(), "Expected patch, but got none");
 			let patches: Patch = serde_json::from_slice(patch.unwrap().as_slice()).unwrap();
-			assert_eq!(patches.len(), test_data.asserts.num_patches);
+			assert_eq!(
+				patches.len(),
+				test_data.asserts.patches.len(),
+				"Unexpected number of patches"
+			);
+			patches.iter().enumerate().for_each(|(i, p)| {
+				assert_eq!(p, &test_data.asserts.patches[i], "Unexpected patch")
+			});
 		} else {
-			assert!(patch.is_none());
+			assert!(patch.is_none(), "Expected no patch, but got one");
 		}
 	}
 

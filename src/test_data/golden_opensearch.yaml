@@ -24,21 +24,21 @@ admission_review:
     kind:
       group: "aiven.io"
       version: v1alpha1
-      kind: Redis
+      kind: OpenSearch
     resource:
       group: "aiven.io"
       version: v1alpha1
-      resource: Redis
-    name: redis-basseng-test
+      resource: OpenSearch
+    name: opensearch-basseng-test
     namespace: basseng
-    operation: CREATE
+    operation: UPDATE
     userInfo:
       username: mortenlj
     object:
       apiVersion: aiven.io/v1alpha1
-      kind: Redis
+      kind: OpenSearch
       metadata:
-        name: redis-basseng-test
+        name: opensearch-basseng-test
         namespace: basseng
       spec:
         plan: hobbyist
