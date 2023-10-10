@@ -16,6 +16,8 @@ use crate::aiven_object::AivenObject;
 use crate::mutators;
 use crate::settings::AppConfig;
 
+const ALLOWED_KINDS: [&str; 2] = ["Redis", "OpenSearch"];
+
 #[instrument(skip_all)]
 pub async fn start_web_server(config: AppConfig) -> Result<()> {
 	let certificate_path = config.web.certificate_path.clone();
@@ -84,6 +86,12 @@ async fn mutate_handler(
 	if let Some(obj) = &req.object {
 		let name = obj.name_any();
 		let namespace = obj.namespace().unwrap();
+
+		if !ALLOWED_KINDS.contains(&req.kind.kind.as_str()) {
+			debug!("Ignoring ServiceIntegration resource");
+			return (StatusCode::OK, Json(res.into_review()));
+		}
+
 		let resource_span = info_span!(
 			"resource",
 			resource_kind = req.kind.kind,
@@ -205,6 +213,7 @@ mod tests {
 	#[case("golden_redis.yaml")]
 	#[case("golden_opensearch.yaml")]
 	#[case("redis_with_all_tags.yaml")]
+	#[case("ignoring_kafka.yaml")]
 	#[tokio::test]
 	async fn test_mutate(test_server: TestServer, test_dir: PathBuf, #[case] file_name: &str) {
 		let test_data = test_data(test_dir, file_name);
