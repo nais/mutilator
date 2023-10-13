@@ -14,7 +14,7 @@ k8s-openapi = { version = "0.20.0", default-features = false, features = ["v1_24
 kube = { version = "0.86.0", features = ["rustls-tls", "admission", "jsonpatch", "derive"], default-features = false }
 log = { version = "0.4.20", features = ["kv_unstable", "serde", "kv_unstable_serde"] }
 schemars = { version = "0.8.15", features = ["derive_json_schema"] }
-serde = { version = "1.0.188", features = ["serde_derive", "derive"] }
+serde = { version = "1.0.189", features = ["serde_derive", "derive"] }
 serde_json = "1.0.107"
 tokio = { version = "1.33.0", features = ["full"] }
 tracing = "0.1.37"
