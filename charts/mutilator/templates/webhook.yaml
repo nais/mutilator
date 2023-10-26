@@ -22,10 +22,6 @@ webhooks:
         apiGroups: ["aiven.io"]
         apiVersions: ["*"]
         resources: ["redis"]
-    namespaceSelector:
-      matchExpressions:
-        - key: team
-          operator: Exists
     failurePolicy: Fail
     matchPolicy: Exact
     sideEffects: None
