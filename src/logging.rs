@@ -1,8 +1,8 @@
 use anyhow::Result;
-use opentelemetry::sdk::trace::Tracer;
-use opentelemetry::sdk::Resource;
 use opentelemetry::KeyValue;
-use opentelemetry_otlp::{HasExportConfig, WithExportConfig};
+use opentelemetry_otlp::HasExportConfig;
+use opentelemetry_sdk::trace::Tracer;
+use opentelemetry_sdk::Resource;
 use opentelemetry_semantic_conventions::resource;
 use std::env;
 use tracing::{info, Level};
@@ -22,7 +22,7 @@ pub fn init_logging(config: &AppConfig) -> Result<()> {
 		LogFormat::Json => (None, Some(layer_fmt::layer().json().flatten_event(true))),
 	};
 
-	tracing_subscriber::Registry::default()
+	Registry::default()
 		.with(otel_layer)
 		.with(plain_log_format)
 		.with(json_log_format)
@@ -47,7 +47,7 @@ fn init_otel(enable: bool) -> Result<(Option<OpenTelemetryLayer<Registry, Tracer
 		return Ok((None, String::from("should-never-print")));
 	}
 
-	let mut otlp_exporter = opentelemetry_otlp::new_exporter().tonic().with_env();
+	let mut otlp_exporter = opentelemetry_otlp::new_exporter().tonic();
 	let otel_log_msg = format!(
 		"OpenTelemetry export config: {:?}",
 		otlp_exporter.export_config()
@@ -56,7 +56,7 @@ fn init_otel(enable: bool) -> Result<(Option<OpenTelemetryLayer<Registry, Tracer
 		.tracing()
 		.with_exporter(otlp_exporter)
 		.with_trace_config(
-			opentelemetry::sdk::trace::config().with_resource(Resource::new(vec![
+			opentelemetry_sdk::trace::config().with_resource(Resource::new(vec![
 				KeyValue::new(
 					resource::K8S_CLUSTER_NAME,
 					env::var("NAIS_CLUSTER_NAME").unwrap_or("UNKNOWN_CLUSTER".to_string()),
@@ -72,7 +72,7 @@ fn init_otel(enable: bool) -> Result<(Option<OpenTelemetryLayer<Registry, Tracer
 				KeyValue::new(resource::SERVICE_NAME, env!("CARGO_BIN_NAME").to_string()),
 			])),
 		)
-		.install_batch(opentelemetry::runtime::Tokio)?;
+		.install_batch(opentelemetry_sdk::runtime::Tokio)?;
 	let otel_layer = tracing_opentelemetry::layer().with_tracer(otel_tracer);
 	Ok((Some(otel_layer), otel_log_msg))
 }
