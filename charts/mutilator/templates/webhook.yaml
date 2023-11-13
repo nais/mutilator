@@ -21,7 +21,7 @@ webhooks:
       - operations: ["CREATE", "UPDATE"]
         apiGroups: ["aiven.io"]
         apiVersions: ["*"]
-        resources: ["redis"]
+        resources: ["redis", "opensearch"]
     failurePolicy: Fail
     matchPolicy: Exact
     sideEffects: None
