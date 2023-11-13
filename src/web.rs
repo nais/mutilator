@@ -88,7 +88,7 @@ async fn mutate_handler(
 		let namespace = obj.namespace().unwrap();
 
 		if !ALLOWED_KINDS.contains(&req.kind.kind.as_str()) {
-			debug!("Ignoring ServiceIntegration resource");
+			debug!("Ignoring resource of kind {:?}", req.kind);
 			return (StatusCode::OK, Json(res.into_review()));
 		}
 
