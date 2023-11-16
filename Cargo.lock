@@ -162,9 +162,9 @@ dependencies = [
 
 [[package]]
 name = "axum-test"
-version = "13.1.1"
+version = "13.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e559a1b9b6e81018cd95f2528fc7b333e181191175f34daa9cf3369c7a18fd5"
+checksum = "2afd5dd5bcdc09d7591addd8252bb637f4e4d69dd86e1e7c82750330ac712244"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -174,6 +174,7 @@ dependencies = [
  "cookie",
  "http",
  "hyper",
+ "pretty_assertions",
  "reserve-port",
  "serde",
  "serde_json",
