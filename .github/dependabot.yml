@@ -14,6 +14,10 @@ updates:
         patterns:
           - kube
           - k8s-openapi
+      axum:
+        patterns:
+          - axum
+          - axum-server
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
