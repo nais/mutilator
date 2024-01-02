@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1.0.78"
+anyhow = "1.0.79"
 axum = { version = "0.6.20", features = ["tracing", "http2", "macros"] }
 axum-server = { version = "0.5.1", features = ["rustls", "tls-rustls"] }
 json-patch = "1.2.0"
