@@ -72,7 +72,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Install earthly
-        uses: earthly/actions-setup@f2bef5b3261c9d75ac09a578552257195fea300a # ratchet:earthly/actions-setup@v1
+        uses: earthly/actions-setup@b61ca413d8100e151c4e517e433a617a402f5051 # ratchet:earthly/actions-setup@v1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           use-cache: true
