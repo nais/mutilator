@@ -9,6 +9,8 @@ on:
 
 env:
   GOOGLE_REGISTRY: europe-north1-docker.pkg.dev
+  IMAGE_REGISTRY: europe-north1-docker.pkg.dev/nais-io/nais/images
+  FEATURE_REGISTRY: europe-north1-docker.pkg.dev/nais-io/nais/feature
   EARTHLY_USE_INLINE_CACHE: true
   EARTHLY_SAVE_INLINE_CACHE: true
   EARTHLY_VERBOSE: true
@@ -81,13 +83,13 @@ jobs:
           EARTHLY_PUSH: "${{ github.ref == 'refs/heads/main' }}"
         run: |
           earthly config global.cache_size_pct 50
-          earthly +docker --VERSION=${VERSION} --REGISTRY=${GOOGLE_REGISTRY}
+          earthly +docker --VERSION=${VERSION} --REGISTRY=${IMAGE_REGISTRY}
       - name: Retrieve image digest
         id: imgdigest
         if: github.ref == 'refs/heads/main'
         run: |
-          docker pull ${{ env.GOOGLE_REGISTRY }}/nais-io/nais/images/mutilator:${VERSION}
-          echo "digest=$(docker inspect ${{ env.GOOGLE_REGISTRY }}/nais-io/nais/images/mutilator:${VERSION} | jq -r '.[].RepoDigests[0]')" >> $GITHUB_OUTPUT
+          docker pull ${{ env.IMAGE_REGISTRY }}/mutilator:${VERSION}
+          echo "digest=$(docker inspect ${{ env.IMAGE_REGISTRY }}/mutilator:${VERSION} | jq -r '.[].RepoDigests[0]')" >> $GITHUB_OUTPUT
       - name: Sign the container image
         if: github.ref == 'refs/heads/main'
         run: cosign sign --yes ${{ steps.imgdigest.outputs.digest }}
@@ -155,7 +157,7 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |-
           for chart in *.tgz; do
-            helm push "$chart" oci://${{ env.GOOGLE_REGISTRY }}/nais-io/nais/feature
+            helm push "$chart" oci://${{ env.FEATURE_REGISTRY }}
           done
 
   rollout:
@@ -171,6 +173,6 @@ jobs:
     steps:
       - uses: nais/fasit-deploy@badff0705af8a57bcf0ab172895273da09ae5959 # ratchet:nais/fasit-deploy@v2
         with:
-          chart: oci://${{ env.GOOGLE_REGISTRY }}/nais-io/nais/feature/mutilator
+          chart: oci://${{ env.FEATURE_REGISTRY }}/mutilator
           version: ${{ needs.version.outputs.version }}
           feature_name: mutilator

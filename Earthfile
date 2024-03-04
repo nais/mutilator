@@ -1,5 +1,7 @@
-VERSION 0.7
+VERSION 0.8
 FROM rust:1
+
+ARG --global PUSH_CACHE=true
 
 prepare:
     FROM rust:1
@@ -13,7 +15,11 @@ prepare:
     RUN curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
     RUN cargo binstall --secure --no-confirm --no-cleanup cargo-chef cargo-nextest
 
-    SAVE IMAGE --push ghcr.io/nais/mutilator/cache:prepare
+    IF ${PUSH_CACHE} == "true"
+        SAVE IMAGE --push ghcr.io/nais/mutilator/cache:prepare
+    ELSE
+        SAVE IMAGE ghcr.io/nais/mutilator/cache:prepare
+    END
 
 chef-planner:
     FROM +prepare
@@ -25,7 +31,12 @@ chef-cook:
     FROM +prepare
     COPY +chef-planner/recipe.json recipe.json
     RUN cargo chef cook --recipe-path recipe.json --release
-    SAVE IMAGE --push ghcr.io/nais/mutilator/cache:chef-cook
+
+    IF ${PUSH_CACHE} == "true"
+        SAVE IMAGE --push ghcr.io/nais/mutilator/cache:chef-cook
+    ELSE
+        SAVE IMAGE ghcr.io/nais/mutilator/cache:chef-cook
+    END
 
 build:
     FROM +chef-cook
@@ -36,7 +47,12 @@ build:
 
     SAVE ARTIFACT target/${CARGO_BUILD_TARGET}/release/mutilator mutilator
     SAVE ARTIFACT target/nextest/ci/junit.xml AS LOCAL target/nextest/ci/junit.xml
-    SAVE IMAGE --push ghcr.io/nais/mutilator/cache:build
+
+    IF ${PUSH_CACHE} == "true"
+        SAVE IMAGE --push ghcr.io/nais/mutilator/cache:build
+    ELSE
+        SAVE IMAGE ghcr.io/nais/mutilator/cache:build
+    END
 
 docker:
     FROM gcr.io/distroless/static-debian11:nonroot
@@ -53,7 +69,7 @@ docker:
     # builtins must be declared
     ARG EARTHLY_GIT_SHORT_HASH
 
-    ARG REGISTRY=europe-north1-docker.pkg.dev
-    ARG image=${REGISTRY}/nais-io/nais/images/mutilator
+    ARG REGISTRY=europe-north1-docker.pkg.dev/nais-io/nais/images
+    ARG image=${REGISTRY}/mutilator
     ARG VERSION=$EARTHLY_GIT_SHORT_HASH
     SAVE IMAGE --push ${image}:${VERSION} ${image}:latest
