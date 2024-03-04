@@ -1,3 +1,5 @@
+{{- if not .Values.debugger.enabled }}
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -7,9 +9,35 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-    - port: 443
+    - port: 9443
       targetPort: https
       protocol: TCP
       name: https
   selector:
     {{- include "mutilator.selectorLabels" . | nindent 4 }}
+{{- else }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    {{- include "mutilator.labels" . | nindent 4 }}
+  name: {{ include "mutilator.fullname" . }}
+spec:
+  ports:
+    - name: https
+      port: 9443
+      protocol: TCP
+      targetPort: 9443
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: {{ include "mutilator.fullname" . }}
+subsets:
+  - addresses:
+      - ip: {{ .Values.debugger.host }}
+    ports:
+      - port: 9443
+{{- end }}
