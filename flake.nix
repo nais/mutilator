@@ -111,9 +111,10 @@
             # Packages made in this flake
             rustToolchain
             # cargo-package # Comment in when you want tests to run on every new shell
-          ] ++ pkgs.lib.optionals pkgs.stdenv.isDarwin
-            [ pkgs.darwin.apple_sdk.frameworks.Security ]
-            ++ pkgs.lib.optionals pkgs.stdenv.isLinux
+          ] ++ pkgs.lib.optionals pkgs.stdenv.isDarwin [
+            pkgs.darwin.apple_sdk.frameworks.Security
+            pkgs.darwin.apple_sdk.frameworks.SystemConfiguration
+          ] ++ pkgs.lib.optionals pkgs.stdenv.isLinux
             (with pkgs; [ cargo-watch ]); # Currently broken on macOS
 
           shellHook = ''

@@ -155,7 +155,6 @@ mod tests {
 	use pretty_assertions::assert_eq;
 	use rstest::*;
 	use serde::{Deserialize, Serialize};
-	use serde_yaml;
 
 	use crate::settings::{AppConfig, LogLevel, Tenant, WebConfig};
 	use crate::web::create_router;
@@ -202,7 +201,7 @@ mod tests {
 
 	fn test_data(path: PathBuf, file_name: &str) -> TestData {
 		let file_path = path.join(file_name);
-		serde_yaml::from_reader(BufReader::new(
+		serde_json::from_reader(BufReader::new(
 			File::open(file_path.clone())
 				.expect(format!("Unable to read '{}'", file_path.display()).as_str()),
 		))
@@ -210,10 +209,10 @@ mod tests {
 	}
 
 	#[rstest]
-	#[case("golden_redis.yaml")]
-	#[case("golden_opensearch.yaml")]
-	#[case("redis_with_all_tags.yaml")]
-	#[case("ignoring_kafka.yaml")]
+	#[case("golden_redis.json")]
+	#[case("golden_opensearch.json")]
+	#[case("redis_with_all_tags.json")]
+	#[case("ignoring_kafka.json")]
 	#[tokio::test]
 	async fn test_mutate(test_server: TestServer, test_dir: PathBuf, #[case] file_name: &str) {
 		let test_data = test_data(test_dir, file_name);
