@@ -138,7 +138,7 @@ jobs:
           password: "${{ steps.auth.outputs.access_token }}"
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@98ddc00a17442e89a24bbf282954a3b65ce6d200' # ratchet:google-github-actions/setup-gcloud@v1
-      - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78 # ratchet:azure/setup-helm@v3
+      - uses: azure/setup-helm@fe7b79cd5ee1e45176fcad797de68ecaf3ca4814 # ratchet:azure/setup-helm@v3
         name: 'Setup Helm'
         with:
           version: '3.8.0'
