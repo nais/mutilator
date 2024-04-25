@@ -22,7 +22,7 @@ jobs:
     name: Set variables
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@1d96c772d19495a3b5c517cd2bc0cb401ea0529f # ratchet:actions/checkout@v3
+      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # ratchet:actions/checkout@v3
       - name: "Set image version"
         id: constants
         run: |
@@ -45,7 +45,7 @@ jobs:
     env:
       VERSION: "${{ needs.version.outputs.version }}"
     steps:
-      - uses: actions/checkout@1d96c772d19495a3b5c517cd2bc0cb401ea0529f # ratchet:actions/checkout@v3
+      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # ratchet:actions/checkout@v3
       - name: Install cosign
         uses: sigstore/cosign-installer@59acb6260d9c0ba8f4a2f9d9b48431a222b68e20 # ratchet:sigstore/cosign-installer@main
         with:
@@ -120,7 +120,7 @@ jobs:
     needs:
       - version
     steps:
-      - uses: actions/checkout@1d96c772d19495a3b5c517cd2bc0cb401ea0529f # ratchet:actions/checkout@v3
+      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # ratchet:actions/checkout@v3
       - id: "auth"
         if: github.ref == 'refs/heads/main'
         name: "Authenticate to Google Cloud"
