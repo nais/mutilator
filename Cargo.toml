@@ -27,7 +27,7 @@ opentelemetry_sdk = { version = "0.22.1", features = ["rt-tokio"] }
 schematic = "0.15.1"
 
 [dev-dependencies]
-axum-test = "14.9.0"
+axum-test = "14.9.1"
 envtestkit = "1.1.2"
 pretty_assertions = "1.4.0"
 rstest = "0.19.0"
