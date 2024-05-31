@@ -1,12 +1,13 @@
 use std::collections::BTreeMap;
 use std::sync::Arc;
 
-use json_patch::PatchOperation;
-use serde_json::{json, Value};
-use tracing::{debug, info, instrument};
-
 use crate::aiven_object::AivenObject;
 use crate::settings::AppConfig;
+use json_patch::PatchOperation;
+use jsonptr::Pointer;
+use serde_json::{json, Value};
+use std::str::FromStr;
+use tracing::{debug, info, instrument};
 
 #[instrument(skip_all)]
 pub fn add_location(
@@ -106,11 +107,17 @@ pub fn add_project_vpc_id(
 }
 
 fn add_patch(path: String, value: Value) -> PatchOperation {
-	PatchOperation::Add(json_patch::AddOperation { path, value })
+	PatchOperation::Add(json_patch::AddOperation {
+		path: Pointer::from_str(&path).unwrap(),
+		value,
+	})
 }
 
 fn replace_patch(path: String, value: Value) -> PatchOperation {
-	PatchOperation::Replace(json_patch::ReplaceOperation { path, value })
+	PatchOperation::Replace(json_patch::ReplaceOperation {
+		path: Pointer::from_str(&path).unwrap(),
+		value,
+	})
 }
 
 #[cfg(test)]
@@ -272,15 +279,17 @@ mod tests {
 			.clone()
 			.into_iter()
 			.map(|p| match p {
-				PatchOperation::Add(add) => {
-					("add", add.path, add.value.as_str().unwrap().to_string())
-				},
+				PatchOperation::Add(add) => (
+					"add",
+					add.path.to_string(),
+					add.value.as_str().unwrap().to_string(),
+				),
 				PatchOperation::Replace(replace) => (
 					"replace",
-					replace.path,
+					replace.path.to_string(),
 					replace.value.as_str().unwrap().to_string(),
 				),
-				_ => ("invalid", "invalid".to_string(), String::new()),
+				_ => panic!(),
 			})
 			.collect()
 	}
