@@ -34,7 +34,7 @@ if [[ ! -x "${EXECUTABLE}" ]]; then
 
   # Fetch latest release information
   DATA_FILE=$(mktemp --suffix=.json)
-  curl -s https://api.github.com/repos/earthly/earthly/releases/latest > "${DATA_FILE}"
+  curl https://api.github.com/repos/earthly/earthly/releases/latest > "${DATA_FILE}"
 
   # Find download URL for executable
   DOWNLOAD_URL=$(jq -r ".assets[] | select(.name == \"${EXECUTABLE_NAME}\") | .browser_download_url" "${DATA_FILE}")
