@@ -89,7 +89,7 @@ pub struct AppConfig {
 	pub otel_enabled: bool,
 }
 
-pub fn parse_otel(var: String) -> Result<Option<bool>, schematic::ConfigError> {
+pub fn parse_otel(var: String) -> Result<Option<bool>, schematic::HandlerError> {
 	let var = var.trim();
 
 	if var.starts_with("https://") || var.starts_with("http://") {
