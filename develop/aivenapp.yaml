@@ -1,0 +1,29 @@
+---
+apiVersion: aiven.nais.io/v1
+kind: AivenApplication
+metadata:
+  labels:
+    app: redis-test
+    team: aura
+  name: redis-test
+  namespace: aura
+spec:
+  redis:
+    - instance: test1
+      access: read
+    - instance: test2
+      access: write
+  secretName: aiven-redis-test-2023-06-13
+---
+apiVersion: aiven.nais.io/v1
+kind: AivenApplication
+metadata:
+  labels:
+    app: kafka-test
+    team: aura
+  name: kafka-test
+  namespace: aura
+spec:
+  kafka:
+    pool: nav-dev
+  secretName: aiven-kafka-test-2023-06-13

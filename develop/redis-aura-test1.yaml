@@ -1,0 +1,10 @@
+---
+apiVersion: aiven.io/v1alpha1
+kind: Redis
+metadata:
+  name: redis-aura-test1
+  namespace: default
+spec:
+  plan: startup-4
+  project: nav-dev
+  terminationProtection: false
