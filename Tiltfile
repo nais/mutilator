@@ -42,3 +42,7 @@ k8s_resource(
         "chart-mutilator:endpointslice",
     ],
 )
+
+# Update locally stored certificates from cluster
+cert_cmd = "kubectl get secret chart-mutilator-certs -o jsonpath='{.data.tls\\.crt}' | base64 -d > tls.crt && kubectl get secret chart-mutilator-certs -o jsonpath='{.data.tls\\.key}' | base64 -d > tls.key"
+local_resource("certificates", cmd=cert_cmd, resource_deps=["chart-mutilator"])
