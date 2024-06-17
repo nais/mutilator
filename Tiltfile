@@ -39,6 +39,6 @@ k8s_resource(
         "chart-mutilator:certificate",
         "chart-mutilator:issuer",
         "chart-mutilator:service",
-        "chart-mutilator:endpoints",
+        "chart-mutilator:endpointslice",
     ],
 )

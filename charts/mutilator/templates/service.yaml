@@ -31,13 +31,20 @@ spec:
       targetPort: 9443
   type: ClusterIP
 ---
-apiVersion: v1
-kind: Endpoints
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
 metadata:
   name: {{ include "mutilator.fullname" . }}
-subsets:
+  labels:
+    kubernetes.io/service-name: {{ include "mutilator.fullname" . }}
+addressType: IPv4
+ports:
+  - name: https
+    protocol: TCP
+    port: 9443
+endpoints:
   - addresses:
-      - ip: {{ .Values.debugger.host }}
-    ports:
-      - port: 9443
+      - {{ .Values.debugger.host }}
+    conditions:
+      ready: true
 {{- end }}
