@@ -37,8 +37,8 @@ It is also recommended to use [ctlptl](https://github.com/tilt-dev/ctlptl) to ma
 
 1. Start the cluster: `ctlptl create cluster kind --registry=ctlptl-registry`
 2. Start tilt:
-   * mutilator running in cluster: `tilt up --stream`, or
-   * mutilator running locally: `tilt up --stream -- --debugger`
+   * mutilator running in cluster: `tilt up`, or
+   * mutilator running locally: `tilt up -- --debugger`
 3. Either
    * Watch logs in cluster `kubectl logs -lapp.kubernetes.io/name=mutilator`, or
    * Run mutilator in your debugger, with these environment variables:
