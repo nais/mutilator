@@ -28,19 +28,24 @@ If you don't have earthly installed, you can use the wrapper at `./earthlyw`, wh
 ## Development
 
 Mutilator is a mutating webhook, which means the requests can be difficult to handcraft when testing.
-For that reason, there is a Tiltfile that installs the webhook into a local kind cluster and sets a service that points out of the cluster to your locally running instance.
+For that reason, there is a Tiltfile that installs the webhook into a local kind cluster and configures mutilator.
+Optionally, tilt can create a service that points out of the cluster to your locally running instance.
 This way you can run mutilator in a debugger, and trigger mutation by applying resources in the kind cluster.
 
 To use this, you need to have [Tilt](https://tilt.dev) installed.
 It is also recommended to use [ctlptl](https://github.com/tilt-dev/ctlptl) to manage your local cluster.
 
 1. Start the cluster: `ctlptl create cluster kind --registry=ctlptl-registry`
-2. Start tilt: `tilt up --stream`
-3. Run mutilator in your debugger, with these environment variables:
+2. Start tilt:
+   * mutilator running in cluster: `tilt up --stream`, or
+   * mutilator running locally: `tilt up --stream -- --debugger`
+3. Either
+   * Watch logs in cluster `kubectl logs -lapp.kubernetes.io/name=mutilator`, or
+   * Run mutilator in your debugger, with these environment variables:
 
-    | Variable                           | Value                                  |
-    |------------------------------------|----------------------------------------|
-    | `MUTILATOR__PROJECT_VPC_ID`        | `00000000-0000-0000-0000-000000000000` |
-    | `MUTILATOR__WEB__CERTIFICATE_PATH` | `tls.crt`                              |
-    | `MUTILATOR__WEB__PRIVATE_KEY_PATH` | `tls.key`                              |
+       | Variable                           | Value                                  |
+       |------------------------------------|----------------------------------------|
+       | `MUTILATOR__PROJECT_VPC_ID`        | `00000000-0000-0000-0000-000000000000` |
+       | `MUTILATOR__WEB__CERTIFICATE_PATH` | `tls.crt`                              |
+       | `MUTILATOR__WEB__PRIVATE_KEY_PATH` | `tls.key`                              |
 4. Apply suitable resources to trigger mutations: `kubectl apply -f develop/`

@@ -9,9 +9,20 @@ deploy_cert_manager()
 helm_repo('aiven', 'https://aiven.github.io/aiven-charts')
 helm_resource('aiven-operator-crds', 'aiven/aiven-operator-crds', resource_deps=['aiven'], pod_readiness="ignore")
 
+config.define_bool("debugger", usage="Enable directing webhook requests out of the cluster to your locally running instance")
+cfg = config.parse()
+
 ignore = str(read_file(".earthignore")).split("\n")
 host_ip = local_output("/sbin/ip route show default | awk '/default/ { print $9 }'")
-
+mutilator_objects = [
+    "chart-mutilator:mutatingwebhookconfiguration",
+    "chart-mutilator:networkpolicy",
+    "chart-mutilator:certificate",
+    "chart-mutilator:issuer",
+]
+if cfg.get("debugger", False):
+    mutilator_objects.append("chart-mutilator:endpointslice")
+    mutilator_objects.append("chart-mutilator:service")
 
 custom_build(
     ref=APP_NAME,
@@ -20,8 +31,6 @@ custom_build(
     skips_local_docker=False,
     ignore=ignore,
 )
-
-
 
 # Deployed to the cluster
 k8s_yaml(helm("charts/{}".format(APP_NAME), set=[
@@ -33,20 +42,13 @@ k8s_yaml(helm("charts/{}".format(APP_NAME), set=[
     "autoscaling.enabled=false",
     "autoscaling.minReplicas=1",
     "replicaCount=1",
-    "debugger.enabled=true",
+    "debugger.enabled={}".format("true" if cfg.get("debugger", False) else "false"),
     "debugger.host={}".format(host_ip),
 ]))
 k8s_resource(
     workload="chart-{}".format(APP_NAME),
     resource_deps=["aiven-operator-crds"],
-    objects=[
-        "chart-mutilator:mutatingwebhookconfiguration",
-        "chart-mutilator:networkpolicy",
-        "chart-mutilator:certificate",
-        "chart-mutilator:issuer",
-        "chart-mutilator:service",
-        "chart-mutilator:endpointslice",
-    ],
+    objects=mutilator_objects,
 )
 
 # Update locally stored certificates from cluster
