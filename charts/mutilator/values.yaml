@@ -11,6 +11,14 @@ tenant:
   environment: "" # Mapped in fasit
 otlp_endpoint: ""
 
+# Debugging
+# Setting this flag allows debugging locally. DO NOT USE WHEN DEPLOYED.
+debugger:
+  enabled: false
+  # IP address of your external service that you would like to proxy requests to
+  host:
+
+# Other settings
 replicaCount: 2
 
 image:

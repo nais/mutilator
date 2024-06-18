@@ -2,8 +2,8 @@
 apiVersion: aiven.io/v1alpha1
 kind: Redis
 metadata:
-  name: redis-aura-test2
-  namespace: aura
+  name: redis-default-test1
+  namespace: default
 spec:
   plan: startup-4
   project: nav-dev
