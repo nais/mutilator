@@ -13,7 +13,7 @@ ignore = str(read_file(".earthignore")).split("\n")
 custom_build(
     ref=APP_NAME,
     command="earthly +docker --VERSION=$EXPECTED_TAG --REGISTRY=$EXPECTED_REGISTRY --PUSH_CACHE=false",
-    deps=["."],
+    deps=["src", "Cargo.*", ".config"],
     skips_local_docker=False,
     ignore=ignore,
 )

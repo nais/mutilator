@@ -2,7 +2,7 @@
 apiVersion: aiven.io/v1alpha1
 kind: Redis
 metadata:
-  name: redis-aura-test1
+  name: redis-default-test2
   namespace: default
 spec:
   plan: startup-4
