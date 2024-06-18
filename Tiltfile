@@ -1,5 +1,6 @@
 load('ext://cert_manager', 'deploy_cert_manager')
 load('ext://helm_resource', 'helm_resource', 'helm_repo')
+load('ext://local_output', 'local_output')
 
 APP_NAME="mutilator"
 
@@ -9,6 +10,8 @@ helm_repo('aiven', 'https://aiven.github.io/aiven-charts')
 helm_resource('aiven-operator-crds', 'aiven/aiven-operator-crds', resource_deps=['aiven'], pod_readiness="ignore")
 
 ignore = str(read_file(".earthignore")).split("\n")
+host_ip = local_output("/sbin/ip route show default | awk '/default/ { print $9 }'")
+
 
 custom_build(
     ref=APP_NAME,
@@ -17,6 +20,8 @@ custom_build(
     skips_local_docker=False,
     ignore=ignore,
 )
+
+
 
 # Deployed to the cluster
 k8s_yaml(helm("charts/{}".format(APP_NAME), set=[
@@ -29,6 +34,7 @@ k8s_yaml(helm("charts/{}".format(APP_NAME), set=[
     "autoscaling.minReplicas=1",
     "replicaCount=1",
     "debugger.enabled=true",
+    "debugger.host={}".format(host_ip),
 ]))
 k8s_resource(
     workload="chart-{}".format(APP_NAME),

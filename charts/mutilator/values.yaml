@@ -16,7 +16,7 @@ otlp_endpoint: ""
 debugger:
   enabled: false
   # IP address of your external service that you would like to proxy requests to
-  host: 192.168.68.124
+  host:
 
 # Other settings
 replicaCount: 2
