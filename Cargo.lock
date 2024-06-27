@@ -648,9 +648,9 @@ dependencies = [
 
 [[package]]
 name = "garde"
-version = "0.18.0"
+version = "0.19.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d5fa8fb3ffe035745c6194540b2064b2fe275f32367fbb4eb026024b7921e2e5"
+checksum = "29a44029f2f9359712d0c34cb78dc36266e9949ffbfcc13f5f737f6e6f1a7226"
 dependencies = [
  "compact_str",
  "garde_derive",
@@ -661,9 +661,9 @@ dependencies = [
 
 [[package]]
 name = "garde_derive"
-version = "0.18.0"
+version = "0.19.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9cf62650515830c41553b72bd49ec20fb120226f9277c7f2847f071cf998325b"
+checksum = "f5e2e952fbf2bcd9dae6854d7ebcbfb05f261656d1131f4f1f4fac9da450adec"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1587,9 +1587,9 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.85"
+version = "1.0.86"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22244ce15aa966053a896d1accb3a6e68469b97c7f33f284b99f0d576879fc23"
+checksum = "5e719e8df665df0d1c8fbfd238015744736151d4445ec0836b8e628aae103b77"
 dependencies = [
  "unicode-ident",
 ]
@@ -1722,9 +1722,9 @@ checksum = "c707298afce11da2efef2f600116fa93ffa7a032b5d7b628aa17711ec81383ca"
 
 [[package]]
 name = "reqwest"
-version = "0.12.4"
+version = "0.12.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "566cafdd92868e0939d3fb961bd0dc25fcfaaed179291093b3d43e6b3150ea10"
+checksum = "c7d6d2a27d57148378eb5e111173f4276ad26340ecc5c49a4a2152167a2d6a37"
 dependencies = [
  "base64 0.22.0",
  "bytes",
@@ -1746,7 +1746,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_urlencoded",
- "sync_wrapper 0.1.2",
+ "sync_wrapper 1.0.0",
  "tokio",
  "tower-service",
  "url",
@@ -1965,9 +1965,9 @@ dependencies = [
 
 [[package]]
 name = "schematic"
-version = "0.16.4"
+version = "0.16.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a2a97356d9a387d6963940ab05de6ac9dbee0c3c97090247954c3d4c2ddc5b8d"
+checksum = "5186a0ee6296b0bec9f35d0e926e1cb736f14b557875a52847dbfb757385f50c"
 dependencies = [
  "garde",
  "miette",
@@ -1983,9 +1983,9 @@ dependencies = [
 
 [[package]]
 name = "schematic_macros"
-version = "0.16.4"
+version = "0.16.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "906eff11b3963e20f5d33fb6dfc67d84351769917970c0d7ebf86e1782d869b5"
+checksum = "fbba5ab97b490c225145d5beba9d565c49049a4c3798227d9ef1dba23f6fcb0f"
 dependencies = [
  "convert_case",
  "darling",
@@ -1996,9 +1996,9 @@ dependencies = [
 
 [[package]]
 name = "schematic_types"
-version = "0.8.2"
+version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "788660c0972a2aab386e2b4b8bd304e0b21c21751e2722cead28d059597d3dad"
+checksum = "e23da8bf72241430f0a710266256139667125e51d11283e60147df0015da4758"
 dependencies = [
  "indexmap 2.2.6",
 ]
@@ -2213,9 +2213,9 @@ checksum = "6980e8d7511241f8acf4aebddbb1ff938df5eebe98691418c4468d0b72a96a67"
 
 [[package]]
 name = "starbase_styles"
-version = "0.4.0"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5e483937f25c81ee4a5b70b608436025d23bffa656d62793ea5bbe6e9b94206d"
+checksum = "dcdc25102288ba49a8ae037a3de74dde8bcd519dfe00dc00dae4ed7344475983"
 dependencies = [
  "dirs",
  "owo-colors",
@@ -2319,9 +2319,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "2.0.66"
+version = "2.0.68"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c42f3f41a2de00b01c0aaad383c5a45241efc8b2d1eda5661812fda5f3cdcff5"
+checksum = "901fa70d88b9d6c98022e23b4136f9f3e54e4662c3bc1bd1d84a42a9a0f0c1e9"
 dependencies = [
  "proc-macro2",
  "quote",
