@@ -30,6 +30,7 @@ chef-planner:
 chef-cook:
     FROM +prepare
     COPY +chef-planner/recipe.json recipe.json
+    RUN cargo chef cook --recipe-path recipe.json --release --tests
     RUN cargo chef cook --recipe-path recipe.json --release
 
     IF ${PUSH_CACHE} == "true"
