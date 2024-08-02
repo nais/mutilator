@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.86"
 axum = { version = "0.7.5", features = ["tracing", "http2", "macros"] }
-axum-server = { version = "0.6.0", features = ["rustls", "tls-rustls"] }
+axum-server = { version = "0.7.1", features = ["rustls", "tls-rustls"] }
 json-patch = "2.0.0"
 k8s-openapi = { version = "0.22.0", default-features = false, features = ["v1_24", "schemars"] }
 kube = { version = "0.93.1", features = ["rustls-tls", "admission", "jsonpatch", "derive"], default-features = false }
