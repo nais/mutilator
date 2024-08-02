@@ -19,6 +19,10 @@ updates:
           - axum
           - axum-server
           - axum-test
+      json_patch:
+        patterns:
+          - json-patch
+          - jsonptr
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
