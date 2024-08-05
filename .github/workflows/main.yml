@@ -171,7 +171,7 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: nais/fasit-deploy@badff0705af8a57bcf0ab172895273da09ae5959 # ratchet:nais/fasit-deploy@v2
+      - uses: nais/fasit-deploy@v2
         with:
           chart: oci://${{ env.FEATURE_REGISTRY }}/mutilator
           version: ${{ needs.version.outputs.version }}
