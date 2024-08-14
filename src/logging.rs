@@ -1,4 +1,5 @@
 use anyhow::Result;
+use opentelemetry::trace::TracerProvider;
 use opentelemetry::KeyValue;
 use opentelemetry_otlp::HasExportConfig;
 use opentelemetry_sdk::trace::Tracer;
@@ -55,8 +56,8 @@ fn init_otel(enable: bool) -> Result<(Option<OpenTelemetryLayer<Registry, Tracer
 	let otel_tracer = opentelemetry_otlp::new_pipeline()
 		.tracing()
 		.with_exporter(otlp_exporter)
-		.with_trace_config(
-			opentelemetry_sdk::trace::config().with_resource(Resource::new(vec![
+		.with_trace_config(opentelemetry_sdk::trace::Config::default().with_resource(
+			Resource::new(vec![
 				KeyValue::new(
 					resource::K8S_CLUSTER_NAME,
 					env::var("NAIS_CLUSTER_NAME").unwrap_or("UNKNOWN_CLUSTER".to_string()),
@@ -70,9 +71,10 @@ fn init_otel(enable: bool) -> Result<(Option<OpenTelemetryLayer<Registry, Tracer
 					env::var("NAIS_APP_NAME").unwrap_or("UNKNOWN_DEPLOYMENT".to_string()),
 				),
 				KeyValue::new(resource::SERVICE_NAME, env!("CARGO_BIN_NAME").to_string()),
-			])),
-		)
-		.install_batch(opentelemetry_sdk::runtime::Tokio)?;
+			]),
+		))
+		.install_batch(opentelemetry_sdk::runtime::Tokio)?
+		.tracer("mutilator");
 	let otel_layer = tracing_opentelemetry::layer().with_tracer(otel_tracer);
 	Ok((Some(otel_layer), otel_log_msg))
 }
