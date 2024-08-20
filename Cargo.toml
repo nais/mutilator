@@ -24,7 +24,7 @@ opentelemetry = { version = "0.24.0"}
 opentelemetry-otlp = { version = "0.17.0", features = ["opentelemetry-http"] }
 opentelemetry-semantic-conventions = "0.16.0"
 opentelemetry_sdk = { version = "0.24.1", features = ["rt-tokio"] }
-schematic = "0.17.2"
+schematic = "0.17.3"
 jsonptr = "0.4.7"
 
 [dev-dependencies]
