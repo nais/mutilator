@@ -30,5 +30,5 @@ jsonptr = "0.4.7"
 [dev-dependencies]
 axum-test = "15.7.1"
 envtestkit = "1.1.2"
-pretty_assertions = "1.4.0"
+pretty_assertions = "1.4.1"
 rstest = "0.22.0"
