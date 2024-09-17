@@ -1,7 +1,6 @@
 use anyhow::Result;
 use opentelemetry::trace::TracerProvider;
 use opentelemetry::KeyValue;
-use opentelemetry_otlp::HasExportConfig;
 use opentelemetry_sdk::trace::Tracer;
 use opentelemetry_sdk::Resource;
 use opentelemetry_semantic_conventions::resource;
@@ -15,7 +14,7 @@ use tracing_subscriber::{filter, Registry};
 use crate::settings::{AppConfig, LogFormat};
 
 pub fn init_logging(config: &AppConfig) -> Result<()> {
-	let (otel_layer, otel_log_msg) = init_otel(config.otel_enabled)?;
+	let otel_layer = init_otel(config.otel_enabled)?;
 
 	use tracing_subscriber::fmt as layer_fmt;
 	let (plain_log_format, json_log_format) = match config.log_format {
@@ -35,24 +34,15 @@ pub fn init_logging(config: &AppConfig) -> Result<()> {
 		.init();
 	info!("{:?} logger initialized", config.log_format);
 
-	if config.otel_enabled {
-		// Moved here due to message disappearing if invoked before log `init()`
-		info!("{}", otel_log_msg);
-	}
-
 	Ok(())
 }
 
-fn init_otel(enable: bool) -> Result<(Option<OpenTelemetryLayer<Registry, Tracer>>, String)> {
+fn init_otel(enable: bool) -> Result<Option<OpenTelemetryLayer<Registry, Tracer>>> {
 	if enable == false {
-		return Ok((None, String::from("should-never-print")));
+		return Ok(None);
 	}
 
-	let mut otlp_exporter = opentelemetry_otlp::new_exporter().tonic();
-	let otel_log_msg = format!(
-		"OpenTelemetry export config: {:?}",
-		otlp_exporter.export_config()
-	);
+	let otlp_exporter = opentelemetry_otlp::new_exporter().tonic();
 	let otel_tracer = opentelemetry_otlp::new_pipeline()
 		.tracing()
 		.with_exporter(otlp_exporter)
@@ -76,5 +66,5 @@ fn init_otel(enable: bool) -> Result<(Option<OpenTelemetryLayer<Registry, Tracer
 		.install_batch(opentelemetry_sdk::runtime::Tokio)?
 		.tracer("mutilator");
 	let otel_layer = tracing_opentelemetry::layer().with_tracer(otel_tracer);
-	Ok((Some(otel_layer), otel_log_msg))
+	Ok(Some(otel_layer))
 }
