@@ -1,4 +1,5 @@
 use anyhow::{anyhow, Result};
+use rustls::crypto;
 use tracing::info;
 
 use settings::AppConfig;
@@ -17,6 +18,9 @@ fn main() -> Result<()> {
 
 #[tokio::main]
 async fn app(config: AppConfig) -> Result<()> {
+	crypto::ring::default_provider()
+		.install_default()
+		.expect("Failed to install default crypto provider");
 	logging::init_logging(&config)?;
 	info!("Configuration loaded: {:?}", config);
 
