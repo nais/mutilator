@@ -20,8 +20,8 @@ values:
       type: string
   otlp_endpoint:
     displayName: OpenTelemetry endpoint
-    config:
-      type: string
+    computed:
+      template: '"{{ .Env.otel_otlp_endpoint }}"'
   project_vpc_id:
     description: Override mapped project vpc id. (<aiven project>/<uuid>)
     computed:
