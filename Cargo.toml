@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.89"
-axum = { version = "0.7.6", features = ["tracing", "http2", "macros"] }
+axum = { version = "0.7.7", features = ["tracing", "http2", "macros"] }
 axum-server = { version = "0.7.1", features = ["rustls", "tls-rustls"] }
 json-patch = "2.0.0"
 k8s-openapi = { version = "0.22.0", default-features = false, features = ["v1_24", "schemars"] }
@@ -29,7 +29,7 @@ jsonptr = "0.4.7"
 rustls = { version = "0.23.13", features = ["ring"] }
 
 [dev-dependencies]
-axum-test = "15.7.3"
+axum-test = "16.1.0"
 envtestkit = "1.1.2"
 pretty_assertions = "1.4.1"
 rstest = "0.23.0"
