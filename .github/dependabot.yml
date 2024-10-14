@@ -14,15 +14,13 @@ updates:
         patterns:
           - kube
           - k8s-openapi
+          - json-patch
+          - jsonptr
       axum:
         patterns:
           - axum
           - axum-server
           - axum-test
-      json_patch:
-        patterns:
-          - json-patch
-          - jsonptr
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
