@@ -4,7 +4,7 @@ use std::sync::Arc;
 use crate::aiven_object::AivenObject;
 use crate::settings::AppConfig;
 use json_patch::PatchOperation;
-use jsonptr::Pointer;
+use jsonptr::PointerBuf;
 use serde_json::{json, Value};
 use std::str::FromStr;
 use tracing::{debug, info, instrument};
@@ -108,14 +108,14 @@ pub fn add_project_vpc_id(
 
 fn add_patch(path: String, value: Value) -> PatchOperation {
 	PatchOperation::Add(json_patch::AddOperation {
-		path: Pointer::from_str(&path).unwrap(),
+		path: PointerBuf::from_str(&path).unwrap(),
 		value,
 	})
 }
 
 fn replace_patch(path: String, value: Value) -> PatchOperation {
 	PatchOperation::Replace(json_patch::ReplaceOperation {
-		path: Pointer::from_str(&path).unwrap(),
+		path: PointerBuf::from_str(&path).unwrap(),
 		value,
 	})
 }
