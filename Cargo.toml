@@ -10,8 +10,8 @@ anyhow = "1.0.95"
 axum = { version = "0.7.9", features = ["tracing", "http2", "macros"] }
 axum-server = { version = "0.7.1", features = ["rustls", "tls-rustls"] }
 json-patch = "3.0.1"
-k8s-openapi = { version = "0.23.0", default-features = false, features = ["v1_30", "schemars"] }
-kube = { version = "0.97.0", features = ["rustls-tls", "admission", "jsonpatch", "derive"], default-features = false }
+k8s-openapi = { version = "0.24.0", default-features = false, features = ["v1_30", "schemars"] }
+kube = { version = "0.98.0", features = ["rustls-tls", "admission", "jsonpatch", "derive"], default-features = false }
 log = { version = "0.4.22", features = ["kv_unstable", "serde", "kv_unstable_serde"] }
 schemars = { version = "0.8.21", features = ["derive_json_schema"] }
 serde = { version = "1.0.216", features = ["serde_derive", "derive"] }
