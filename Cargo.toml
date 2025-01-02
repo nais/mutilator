@@ -32,4 +32,4 @@ rustls = { version = "0.23.20", features = ["ring"] }
 axum-test = "16.4.1"
 envtestkit = "1.1.2"
 pretty_assertions = "1.4.1"
-rstest = "0.23.0"
+rstest = "0.24.0"
