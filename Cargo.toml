@@ -15,7 +15,7 @@ kube = { version = "0.98.0", features = ["rustls-tls", "admission", "jsonpatch",
 log = { version = "0.4.25", features = ["kv_unstable", "serde", "kv_unstable_serde"] }
 schemars = { version = "0.8.21", features = ["derive_json_schema"] }
 serde = { version = "1.0.217", features = ["serde_derive", "derive"] }
-serde_json = "1.0.138"
+serde_json = "1.0.139"
 tokio = { version = "1.43.0", features = ["full"] }
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["fmt", "json"] }
