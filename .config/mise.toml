@@ -1,0 +1,23 @@
+[tools]
+earthly = "latest"
+tilt = "latest"
+
+[tasks.test]
+run = "cargo nextest run"
+description = "Run tests"
+
+[tasks.lint]
+run = "cargo clippy"
+description = "Run linters"
+
+[tasks.build]
+run = "cargo build"
+description = "Build the project"
+
+[tasks.push]
+run = "git push"
+depends = ["build", "lint", "test"]
+
+[tasks.all]
+run = ""
+depends = ["build", "lint", "test"]
