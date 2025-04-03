@@ -166,10 +166,10 @@ mod tests {
 
 	#[rstest]
 	fn add_tags_when_no_tags_before(config: Arc<AppConfig>) {
-		let redis = create_object(None);
+		let valkey = create_object(None);
 		let mut patches = Vec::new();
 
-		add_tags(&config, &redis, &mut patches);
+		add_tags(&config, &valkey, &mut patches);
 
 		assert_eq!(patches.len(), 1);
 		let patch = patches.pop().unwrap();
@@ -194,13 +194,13 @@ mod tests {
 
 	#[rstest]
 	fn add_tags_when_other_tags_exists(config: Arc<AppConfig>) {
-		let redis = create_object(Some(BTreeMap::from([(
+		let valkey = create_object(Some(BTreeMap::from([(
 			"cool".to_string(),
 			"tag".to_string(),
 		)])));
 		let mut patches: Vec<PatchOperation> = Vec::new();
 
-		add_tags(&config, &redis, &mut patches);
+		add_tags(&config, &valkey, &mut patches);
 		let actual = make_comparable_set(&mut patches);
 
 		let mut expected = BTreeSet::new();
@@ -216,10 +216,10 @@ mod tests {
 		for (key, _value) in TAG_PAIRS {
 			existing_tags.insert(key.to_string(), "invalid".to_string());
 		}
-		let redis = create_object(Some(existing_tags));
+		let valkey = create_object(Some(existing_tags));
 		let mut patches: Vec<PatchOperation> = Vec::new();
 
-		add_tags(&config, &redis, &mut patches);
+		add_tags(&config, &valkey, &mut patches);
 		let actual = make_comparable_set(&mut patches);
 
 		let mut expected = BTreeSet::new();
@@ -253,10 +253,10 @@ mod tests {
 				_ => {},
 			}
 		}
-		let redis = create_object(Some(existing_tags));
+		let valkey = create_object(Some(existing_tags));
 		let mut patches: Vec<PatchOperation> = Vec::new();
 
-		add_tags(&config, &redis, &mut patches);
+		add_tags(&config, &valkey, &mut patches);
 		let actual = make_comparable_set(&mut patches);
 
 		let mut expected = BTreeSet::new();
@@ -297,7 +297,7 @@ mod tests {
 	fn create_object(tags: Option<BTreeMap<String, String>>) -> Box<dyn AivenObject> {
 		let object: DynamicObject = serde_json::from_value(json!({
 			"apiVersion": "aiven.io/v1",
-			"kind": "Redis",
+			"kind": "Valkey",
 			"metadata": {
 				"name": "test-name",
 				"namespace": "test-namespace"

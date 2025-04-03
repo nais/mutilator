@@ -16,7 +16,7 @@ use crate::aiven_object::AivenObject;
 use crate::mutators;
 use crate::settings::AppConfig;
 
-const ALLOWED_KINDS: [&str; 3] = ["Redis", "OpenSearch", "Valkey"];
+const ALLOWED_KINDS: [&str; 2] = ["OpenSearch", "Valkey"];
 
 #[instrument(skip_all)]
 pub async fn start_web_server(config: AppConfig) -> Result<()> {
@@ -210,9 +210,8 @@ mod tests {
 
 	#[rstest]
 	#[case("golden_valkey.json")]
-	#[case("golden_redis.json")]
 	#[case("golden_opensearch.json")]
-	#[case("redis_with_all_tags.json")]
+	#[case("valkey_with_all_tags.json")]
 	#[case("ignoring_kafka.json")]
 	#[tokio::test]
 	async fn test_mutate(test_server: TestServer, test_dir: PathBuf, #[case] file_name: &str) {

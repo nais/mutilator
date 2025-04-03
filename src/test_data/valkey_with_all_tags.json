@@ -14,15 +14,6 @@
       },
       {
         "op": "add",
-        "path": "/spec/tags",
-        "value": {
-          "environment": "test-tenant-env",
-          "tenant": "test-tenant-name",
-          "team": "basseng"
-        }
-      },
-      {
-        "op": "add",
         "path": "/spec/cloudName",
         "value": "google-test-location"
       }
@@ -36,14 +27,14 @@
       "kind": {
         "group": "aiven.io",
         "version": "v1alpha1",
-        "kind": "Redis"
+        "kind": "Valkey"
       },
       "resource": {
         "group": "aiven.io",
         "version": "v1alpha1",
-        "resource": "Redis"
+        "resource": "valkey"
       },
-      "name": "redis-basseng-test",
+      "name": "test-pod",
       "namespace": "basseng",
       "operation": "CREATE",
       "userInfo": {
@@ -51,14 +42,19 @@
       },
       "object": {
         "apiVersion": "aiven.io/v1alpha1",
-        "kind": "Redis",
+        "kind": "Valkey",
         "metadata": {
-          "name": "redis-basseng-test",
+          "name": "valkey-basseng-test",
           "namespace": "basseng"
         },
         "spec": {
           "plan": "hobbyist",
-          "project": "dev-nais-dev"
+          "project": "dev-nais-dev",
+          "tags": {
+            "environment": "test-tenant-env",
+            "tenant": "test-tenant-name",
+            "team": "basseng"
+          }
         }
       }
     }

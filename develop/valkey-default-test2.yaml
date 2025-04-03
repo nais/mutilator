@@ -1,8 +1,8 @@
 ---
 apiVersion: aiven.io/v1alpha1
-kind: Redis
+kind: Valkey
 metadata:
-  name: redis-default-test1
+  name: valkey-default-test2
   namespace: default
 spec:
   plan: startup-4
