@@ -801,7 +801,7 @@ dependencies = [
  "futures-core",
  "futures-sink",
  "http 1.2.0",
- "indexmap 2.8.0",
+ "indexmap 2.9.0",
  "slab",
  "tokio",
  "tokio-util",
@@ -1036,9 +1036,9 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "2.8.0"
+version = "2.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3954d50fe15b02142bf25d3b8bdadb634ec3948f103d04ffe3031bc8fe9d7058"
+checksum = "cea70ddb795996207ad57735b50c5982d8844f38ba9ee5f1aedcfb708a2aa11e"
 dependencies = [
  "equivalent",
  "hashbrown 0.15.0",
@@ -1559,9 +1559,9 @@ checksum = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39"
 
 [[package]]
 name = "owo-colors"
-version = "4.1.0"
+version = "4.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fb37767f6569cd834a413442455e0f066d0d522de8630436e2a1761d9726ba56"
+checksum = "1036865bb9422d3300cf723f657c2851d0e9ab12567854b1f4eba3d77decf564"
 
 [[package]]
 name = "parking_lot"
@@ -2110,9 +2110,9 @@ dependencies = [
 
 [[package]]
 name = "schematic"
-version = "0.18.3"
+version = "0.18.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c97a6ec250f1faa0d151684001b1998810599809b3a1b4b295d74fc555a650d8"
+checksum = "c5ef6e8280c23aaea2fd335c7c6add3be31618f80e8a9883d2e77927a9aa3f40"
 dependencies = [
  "garde",
  "miette",
@@ -2127,9 +2127,9 @@ dependencies = [
 
 [[package]]
 name = "schematic_macros"
-version = "0.18.2"
+version = "0.18.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a4fb2bfd11a97d3ac2f333552298c77612d3ac2899c3511f5fbe0e07c834b343"
+checksum = "37774001c08aa18ec7bb0d2c216f6897d29c5b4773f5dcae9b464a8d1285d1ae"
 dependencies = [
  "convert_case",
  "darling",
@@ -2140,11 +2140,11 @@ dependencies = [
 
 [[package]]
 name = "schematic_types"
-version = "0.10.1"
+version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb7015e8ac80472bdf12ddde4f0cf059acdbe92eff225bd6812c6036fec704fd"
+checksum = "b57d406829eeb15dcdb5e8b450310458cfe337f298f804e2e5c0d2c59eb764e4"
 dependencies = [
- "indexmap 2.8.0",
+ "indexmap 2.9.0",
 ]
 
 [[package]]
@@ -2281,7 +2281,7 @@ version = "0.9.34+deprecated"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6a8b1a1a2ebf674015cc02edccce75287f1a0130d394307b36743c2f5d504b47"
 dependencies = [
- "indexmap 2.8.0",
+ "indexmap 2.9.0",
  "itoa",
  "ryu",
  "serde",
@@ -2361,9 +2361,9 @@ dependencies = [
 
 [[package]]
 name = "starbase_styles"
-version = "0.5.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b2eaf276f88990ad31740689546564c450caf2acbb9cd60e5cd517931783fd32"
+checksum = "dd1333c654161a61bb2a89aa474aad3d1f393e9ac442d5c48f6924b4062e8c50"
 dependencies = [
  "dirs",
  "owo-colors",
@@ -2670,7 +2670,7 @@ version = "0.22.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "583c44c02ad26b0c3f3066fe629275e50627026c51ac2e595cca4c230ce1ce1d"
 dependencies = [
- "indexmap 2.8.0",
+ "indexmap 2.9.0",
  "toml_datetime",
  "winnow",
 ]
