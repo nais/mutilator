@@ -1,0 +1,39 @@
+[tools]
+ctlptl = "latest"
+earthly = "latest"
+tilt = "latest"
+
+[tasks.test]
+run = "cargo nextest run"
+description = "Run tests"
+
+[tasks.lint]
+run = "cargo clippy"
+description = "Run linters"
+
+[tasks.build]
+run = "cargo build"
+description = "Build the project"
+
+[tasks.push]
+run = "git push"
+depends = ["build", "lint", "test"]
+
+[tasks.all]
+run = ""
+depends = ["build", "lint", "test"]
+
+[tasks.start-kind-cluster]
+run = "ctlptl get cluster kind || ctlptl create cluster kind --registry=ctlptl-registry"
+description = "Start a kind cluster if not already running"
+
+[tasks.tilt-up]
+run = "tilt up"
+depends = ["start-kind-cluster"]
+
+[tasks.tilt-down]
+run = "tilt down"
+
+[tasks.stop-kind-cluster]
+run = "ctlptl delete cluster kind"
+description = "Stop and remove the kind cluster"
