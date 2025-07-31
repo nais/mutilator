@@ -2,64 +2,59 @@
   description = "A Nix-flake-based Rust development environment";
 
   inputs = {
-    crane = {
-      url = "github:ipetkov/crane";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        flake-utils.follows = "flake-utils";
-      };
-    };
+    crane.url = "github:ipetkov/crane";
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "github:NixOS/nixpkgs";
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        flake-utils.follows = "flake-utils";
-      };
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = { self, crane, flake-utils, nixpkgs, rust-overlay, }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs = { self, ... }@inputs:
+    inputs.flake-utils.lib.eachDefaultSystem ( system:
       let
-        pkgs = import nixpkgs {
+        pkgs = import inputs.nixpkgs {
           inherit system;
-          overlays = [ (import rust-overlay) ];
+          overlays = [ (import inputs.rust-overlay) ];
         };
+        inherit (pkgs) lib;
 
         # Target musl when building on 64-bit linux
         buildTarget = {
-          "x86_64-linux" = "x86_64-unknown-linux-musl";
-        }.${system} or (pkgs.rust.toRustTargetSpec pkgs.stdenv.hostPlatform);
+            "x86_64-linux" = "x86_64-unknown-linux-musl";
+          }.${system} or (pkgs.stdenv.buildPlatform.rust.rustcTargetSpec);
         rustToolchain = pkgs.rust-bin.stable.latest.default.override {
           targets = [
             buildTarget
-            (pkgs.rust.toRustTargetSpec pkgs.stdenv.hostPlatform)
+            (pkgs.stdenv.buildPlatform.rust.rustcTargetSpec)
           ];
         };
 
         # Set-up build dependencies and configure rust
-        craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
+        craneLib = (inputs.crane.mkLib pkgs).overrideToolchain rustToolchain;
 
         # Shamelessly stolen from:
         # https://github.com/fedimint/fedimint/blob/66519d5e978e22bb10a045f406101891e1bb7eb5/flake.nix#L99
-        filterSrcWithRegexes = regexes: src:
-          let basePath = toString src + "/";
-          in pkgs.lib.cleanSourceWith {
-            filter = (path: type:
+        filterSrcWithRegexes =
+          regexes: src:
+          let
+            basePath = toString src + "/";
+          in
+          lib.cleanSourceWith {
+            filter =
+              path: type:
               let
-                relPath = pkgs.lib.removePrefix basePath (toString path);
-                includePath = (type == "directory")
-                  || pkgs.lib.any (re: builtins.match re relPath != null)
-                  regexes;
+                relPath = lib.removePrefix basePath (toString path);
+                includePath = (type == "directory") || lib.any (re: builtins.match re relPath != null) regexes;
                 # uncomment to debug:
                 # builtins.trace "${relPath}: ${lib.boolToString includePath}"
-              in includePath);
+              in
+              includePath;
             inherit src;
           };
 
-        cargo-details = pkgs.lib.importTOML ./Cargo.toml;
+        cargo-details = lib.importTOML ./Cargo.toml;
         binary-name = cargo-details.package.name;
         commonArgs = {
           nativeBuildInputs = with pkgs; [ pkg-config ];
@@ -81,7 +76,7 @@
           src = filterSrcWithRegexes package-file-filter ./.;
           pname = binary-name;
         });
-        dockerTag = if nixpkgs.lib.hasAttr "rev" self then
+        dockerTag = if lib.hasAttr "rev" self then
           "${builtins.toString self.revCount}-${self.shortRev}"
         else
           "gitDirty";
