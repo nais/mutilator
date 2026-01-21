@@ -2040,15 +2040,16 @@ dependencies = [
 
 [[package]]
 name = "schematic"
-version = "0.19.2"
+version = "0.19.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b4b8a1971ab7ef531b4a029a1f3156e99adf1cbee1b11e56571c3491011594a"
+checksum = "3d6660ec6d448827a44a3473ab9c4f69d80dd175a52e6a520e3d8c1b11f0c06f"
 dependencies = [
  "garde",
  "miette",
  "schematic_macros",
  "schematic_types",
  "serde",
+ "serde-content",
  "serde_path_to_error",
  "starbase_styles",
  "thiserror 2.0.17",
@@ -2057,9 +2058,9 @@ dependencies = [
 
 [[package]]
 name = "schematic_macros"
-version = "0.19.1"
+version = "0.19.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "28d42411739913ed3cedab7c87e029988e2027b55d80a38a4208f4c045d2d4b3"
+checksum = "2e63bc3e073c17dd19740d43cf833fe73f0fcea42d28a9f039ef7a97c31cac52"
 dependencies = [
  "convert_case",
  "darling 0.23.0",
@@ -2070,9 +2071,9 @@ dependencies = [
 
 [[package]]
 name = "schematic_types"
-version = "0.11.1"
+version = "0.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "93bf89b0932cc52142c1874651be6fcce0c4ab70aedffa352a029a243e8dd4c5"
+checksum = "da3b746ce015c91141bff236c0b439074e1ac5f9da7560ea8f3fd581e18dbe9d"
 dependencies = [
  "indexmap 2.13.0",
 ]
@@ -2129,6 +2130,15 @@ checksum = "9a8e94ea7f378bd32cbbd37198a4a91436180c5bb472411e48b5ec2e2124ae9e"
 dependencies = [
  "serde_core",
  "serde_derive",
+]
+
+[[package]]
+name = "serde-content"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3753ca04f350fa92d00b6146a3555e63c55388c9ef2e11e09bce2ff1c0b509c6"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
