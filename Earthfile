@@ -13,7 +13,8 @@ prepare:
     RUN rustup target add "${CARGO_BUILD_TARGET}"
 
     RUN curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
-    RUN cargo binstall --secure --no-confirm --no-cleanup cargo-chef cargo-nextest
+    RUN cargo binstall --secure --no-confirm --no-cleanup cargo-chef
+    RUN cargo install --locked cargo-nextest
 
     IF ${PUSH_CACHE} == "true"
         SAVE IMAGE --push ghcr.io/nais/mutilator/cache:prepare
