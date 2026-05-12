@@ -4,7 +4,6 @@ dependencies:
       - cert-manager
 environmentKinds:
   - tenant
-  - legacy
 values:
   cluster_name:
     computed:

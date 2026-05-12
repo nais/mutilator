@@ -160,8 +160,8 @@ jobs:
             helm push "$chart" oci://${{ env.FEATURE_REGISTRY }}
           done
 
-  rollout:
-    name: Rollout
+  deploy:
+    name: Deploy
     if: github.actor != 'dependabot[bot]' && github.ref == 'refs/heads/main'
     needs:
       - version
@@ -171,8 +171,12 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: nais/fasit-deploy@v2 # ratchet:exclude
+      - uses: nais/fasit-deploy@v4 # ratchet:exclude
         with:
           chart: oci://${{ env.FEATURE_REGISTRY }}/mutilator
           version: ${{ needs.version.outputs.version }}
-          feature_name: mutilator
+          targets: |
+            [
+              { "target": { "kind": "tenant", "tenant": "ci-nais" }, "wait": true },
+              { "target": { "kind": "tenant" } }
+            ]
