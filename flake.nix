@@ -16,7 +16,7 @@
   };
 
   outputs =
-    { self, ... }@inputs:
+    inputs:
     inputs.flake-utils.lib.eachDefaultSystem (
       system:
       let
@@ -32,84 +32,59 @@
             "x86_64-linux" = "x86_64-unknown-linux-musl";
           }
           .${system} or (pkgs.stdenv.buildPlatform.rust.rustcTargetSpec);
-        rustToolchain = pkgs.rust-bin.stable.latest.default.override {
-          targets = [
-            buildTarget
-            (pkgs.stdenv.buildPlatform.rust.rustcTargetSpec)
-          ];
-        };
 
         # Set-up build dependencies and configure rust
-        craneLib = (inputs.crane.mkLib pkgs).overrideToolchain rustToolchain;
-
-        # Shamelessly stolen from:
-        # https://github.com/fedimint/fedimint/blob/66519d5e978e22bb10a045f406101891e1bb7eb5/flake.nix#L99
-        filterSrcWithRegexes =
-          regexes: src:
-          let
-            basePath = toString src + "/";
-          in
-          lib.cleanSourceWith {
-            filter =
-              path: type:
-              let
-                relPath = pkgs.lib.removePrefix basePath (toString path);
-                includePath = (type == "directory") || pkgs.lib.any (re: builtins.match re relPath != null) regexes;
-                # uncomment to debug:
-                # builtins.trace "${relPath}: ${lib.boolToString includePath}"
-              in
-              includePath;
-            inherit src;
-          };
-
+        craneLib = (inputs.crane.mkLib pkgs).overrideToolchain (
+          p:
+          p.rust-bin.stable.latest.default.override {
+            targets = [ buildTarget ];
+          }
+        );
         cargo-details = lib.importTOML ./Cargo.toml;
         binary-name = cargo-details.package.name;
         commonArgs = {
           nativeBuildInputs = with pkgs; [ pkg-config ];
           CARGO_BUILD_TARGET = buildTarget;
+        }
+        // lib.optionalAttrs (buildTarget == "x86_64-unknown-linux-musl") {
+          CARGO_BUILD_RUSTFLAGS = "-C target-feature=+crt-static";
         };
 
-        # Compile and cache only cargo dependencies
-        dep-files-filter = [
-          "Cargo.lock"
-          "Cargo.toml"
-          ".*/Cargo.toml"
-        ];
-        cargo-deps = craneLib.buildDepsOnly (
-          commonArgs
-          // {
-            src = filterSrcWithRegexes dep-files-filter ./.;
-            pname = "${binary-name}-deps";
-          }
-        );
-
-        # Compile and cache only workspace code (seperately from 3rc party dependencies)
-        package-file-filter = dep-files-filter ++ [
-          "src/.+.rs"
-          "src/test_data/.+.yaml"
-        ];
         cargo-package = craneLib.buildPackage (
           commonArgs
           // {
-            inherit cargo-deps;
-            src = filterSrcWithRegexes package-file-filter ./.;
+            strictDeps = true;
+            src = lib.cleanSourceWith {
+              src = ./.;
+              name = "source";
+              filter =
+                path: type:
+                (lib.match ".*/test_data/.+\.(json|ya?ml)" path != null) || (craneLib.filterCargoSources path type);
+            };
             pname = binary-name;
+            cargo-deps = craneLib.buildDepsOnly (
+              commonArgs
+              // {
+                src = lib.cleanSourceWith {
+                  src = ./.;
+                  name = "dependencies";
+                  filter = path: _type: lib.match ".*/Cargo\.(toml|lock)$" path != null;
+                };
+              }
+            );
           }
         );
         dockerTag =
-          if lib.hasAttr "rev" self then
-            "${builtins.toString self.revCount}-${self.shortRev}"
+          if lib.hasAttr "rev" inputs.self then
+            "${lib.toString inputs.self.revCount}-${inputs.self.shortRev}"
           else
             "gitDirty";
       in
       {
-        checks = {
-          # inherit # Comment in when you want tests to run on every new shell
-          #   cargo-package
-          #   ;
-        };
+        checks = { inherit cargo-package; };
         devShells.default = pkgs.mkShell {
-          nativeBuildInputs =
+          inputsFrom = [ cargo-package ];
+          packages =
             (with pkgs; [
               # rust specific
               cargo-audit
@@ -119,18 +94,12 @@
               cargo-outdated
 
               # Editor stuffs
-              helix
               lldb
               rust-analyzer
 
               # Other tooling
               earthly
             ])
-            ++ [
-              # Packages made in this flake
-              rustToolchain
-              # cargo-package # Comment in when you want tests to run on every new shell
-            ]
             ++ lib.optionals pkgs.stdenv.isDarwin [
               pkgs.darwin.apple_sdk.frameworks.Security
               pkgs.darwin.apple_sdk.frameworks.SystemConfiguration
@@ -138,12 +107,11 @@
             ++ lib.optionals pkgs.stdenv.isLinux (with pkgs; [ cargo-watch ]); # Currently broken on macOS
 
           shellHook = ''
-            ${rustToolchain}/bin/cargo --version
-            ${pkgs.helix}/bin/hx --version
-            ${pkgs.helix}/bin/hx --health rust
+            cargo --version
           '';
         };
-        packages = {
+        packages = rec {
+          default = rust;
           rust = cargo-package;
           docker = pkgs.dockerTools.buildImage {
             name = "europe-north1-docker.pkg.dev/nais-io/nais/images/${binary-name}";
@@ -155,7 +123,6 @@
             };
           };
         };
-        packages.default = cargo-package;
 
         formatter = inputs.treefmt-nix.lib.mkWrapper pkgs {
           programs.nixfmt.enable = true;
