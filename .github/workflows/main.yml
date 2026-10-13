@@ -62,13 +62,13 @@ jobs:
           token_format: "access_token"
       - name: Login to Google Artifact Registry
         if: github.ref == 'refs/heads/main'
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # ratchet:docker/login-action@v2
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # ratchet:docker/login-action@v2
         with:
           registry: ${{ env.GOOGLE_REGISTRY }}
           username: "oauth2accesstoken"
           password: "${{ steps.auth.outputs.access_token }}"
       - name: Login to GitHub Packages Docker Registry
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # ratchet:docker/login-action@v2
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # ratchet:docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -95,7 +95,7 @@ jobs:
         run: cosign sign --yes ${{ steps.imgdigest.outputs.digest }}
       - name: Create SBOM
         if: github.ref == 'refs/heads/main'
-        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # ratchet:aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # ratchet:aquasecurity/trivy-action@master
         with:
           scan-type: 'image'
           format: 'cyclonedx'
@@ -131,7 +131,7 @@ jobs:
           token_format: "access_token"
       - name: Login to Google Artifact Registry
         if: github.ref == 'refs/heads/main'
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # ratchet:docker/login-action@v2
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # ratchet:docker/login-action@v2
         with:
           registry: ${{ env.GOOGLE_REGISTRY }}
           username: "oauth2accesstoken"
@@ -160,8 +160,8 @@ jobs:
             helm push "$chart" oci://${{ env.FEATURE_REGISTRY }}
           done
 
-  rollout:
-    name: Rollout
+  deploy:
+    name: Deploy
     if: github.actor != 'dependabot[bot]' && github.ref == 'refs/heads/main'
     needs:
       - version
@@ -171,8 +171,12 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: nais/fasit-deploy@v2 # ratchet:exclude
+      - uses: nais/fasit-deploy@v4 # ratchet:exclude
         with:
           chart: oci://${{ env.FEATURE_REGISTRY }}/mutilator
           version: ${{ needs.version.outputs.version }}
-          feature_name: mutilator
+          targets: |
+            [
+              { "target": { "kind": "tenant", "tenant": "ci-nais" }, "wait": true },
+              { "target": { "kind": "tenant" } }
+            ]
