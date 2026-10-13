@@ -100,11 +100,11 @@
               # Other tooling
               earthly
             ])
-            ++ lib.optionals pkgs.stdenv.isDarwin [
+            ++ lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
               pkgs.darwin.apple_sdk.frameworks.Security
               pkgs.darwin.apple_sdk.frameworks.SystemConfiguration
             ]
-            ++ lib.optionals pkgs.stdenv.isLinux (with pkgs; [ cargo-watch ]); # Currently broken on macOS
+            ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux (with pkgs; [ cargo-watch ]); # Currently broken on macOS
 
           shellHook = ''
             cargo --version
